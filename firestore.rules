@@ -1,0 +1,104 @@
+rules_version = '2';
+
+// Brother Shoes security rules
+//  - Logged-in users that have a role can READ shop data.
+//  - Owner and staff can WRITE shop data.
+//  - View-only partners can only read.
+//  - Only the owner manages users, invitations and shop settings.
+//  - Nothing can ever be deleted (the app uses soft-delete). Only invitations can be revoked by the owner.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function profilePath() { return /databases/$(database)/documents/users/$(request.auth.uid); }
+    function hasProfile() { return signedIn() && exists(profilePath()); }
+    function me() { return get(profilePath()).data; }
+    function isActive() { return hasProfile() && me().active == true; }
+    function isOwner() { return isActive() && me().role == 'owner'; }
+    function canWrite() { return isActive() && (me().role == 'owner' || me().role == 'staff'); }
+    function canRead() { return isActive(); }
+
+    // Tells the login screen whether an owner already exists. Contains no private data.
+    match /meta/setup {
+      allow get: if true;
+      allow create: if signedIn()
+                    && !exists(/databases/$(database)/documents/meta/setup)
+                    && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /users/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isOwner());
+      allow list: if isOwner();
+      // First owner account (only while no owner exists), or claiming an invitation made by the owner.
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.active == true
+        && (
+          (!exists(/databases/$(database)/documents/meta/setup) && request.resource.data.role == 'owner')
+          ||
+          (request.auth.token.email != null
+            && exists(/databases/$(database)/documents/invites/$(request.auth.token.email))
+            && request.resource.data.role == get(/databases/$(database)/documents/invites/$(request.auth.token.email)).data.role
+            && request.resource.data.role in ['staff', 'partner'])
+        );
+      // Owner can change role / enable / disable other people (never themselves).
+      allow update: if isOwner() && request.auth.uid != uid;
+      allow delete: if false;
+    }
+
+    match /invites/{email} {
+      allow get: if isOwner() || (signedIn() && request.auth.token.email == email);
+      allow list: if isOwner();
+      allow create, update, delete: if isOwner();
+    }
+
+    match /settings/{id} {
+      allow read: if canRead();
+      allow create, update: if isOwner();
+      allow delete: if false;
+    }
+
+    // Shop data: stock/balances, articles, sales, credit (udhaar), supplier payments, expenses, returns/exchanges.
+    match /state/{id} {
+      allow read: if canRead();
+      allow create, update: if canWrite();
+      allow delete: if false;
+    }
+    match /articles/{id} {
+      allow read: if canRead();
+      allow create, update: if canWrite();
+      allow delete: if false;
+    }
+    match /sales/{id} {
+      allow read: if canRead();
+      allow create, update: if canWrite();
+      allow delete: if false;
+    }
+    match /credits/{id} {
+      allow read: if canRead();
+      allow create, update: if canWrite();
+      allow delete: if false;
+    }
+    match /supplierPayments/{id} {
+      allow read: if canRead();
+      allow create, update: if canWrite();
+      allow delete: if false;
+    }
+    match /expenses/{id} {
+      allow read: if canRead();
+      allow create, update: if canWrite();
+      allow delete: if false;
+    }
+    match /returns/{id} {
+      allow read: if canRead();
+      allow create, update: if canWrite();
+      allow delete: if false;
+    }
+
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
