@@ -1,0 +1,6 @@
+{
+  "appId": "com.brothershoespk.app",
+  "appName": "Brother Shoes",
+  "webDir": "www",
+  "server": { "androidScheme": "https" }
+}
