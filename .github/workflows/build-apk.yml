@@ -28,4 +28,39 @@ jobs:
       - name: Prepare web files (with Firebase SDK bundled inside the app)
         run: |
           mkdir -p www
-          cp
+          cp index.html logo.png icon-192.png icon-512.png intro.mp4 manifest.json www/
+          for f in app auth firestore; do
+            curl -fsSL -o "www/firebase-$f-compat.js" "https://www.gstatic.com/firebasejs/10.12.2/firebase-$f-compat.js"
+          done
+          ls -la www
+
+      - name: Install Capacitor
+        run: npm install
+
+      - name: Create Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Set app icon
+        run: |
+          cd android/app/src/main/res
+          rm -rf mipmap-anydpi-v26
+          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            mkdir -p "mipmap-$d"
+            cp "$GITHUB_WORKSPACE/icon-512.png" "mipmap-$d/ic_launcher.png"
+            cp "$GITHUB_WORKSPACE/icon-512.png" "mipmap-$d/ic_launcher_round.png"
+            cp "$GITHUB_WORKSPACE/icon-512.png" "mipmap-$d/ic_launcher_foreground.png"
+          done
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BrotherShoes-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
