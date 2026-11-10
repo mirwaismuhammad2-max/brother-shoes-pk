@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.mirwaismuhammad2_max.twa",
+      "sha256_cert_fingerprints": [
+        "76:9D:CE:B5:99:AB:6B:EF:2C:54:AA:26:4F:38:01:82:BC:F4:73:F3:F1:7C:5B:5F:7D:3D:C7:C7:94:52:04:4E"
+      ]
+    }
+  }
+]
