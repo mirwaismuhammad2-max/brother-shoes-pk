@@ -8,6 +8,7 @@ on:
       - "index.html"
       - "package.json"
       - "capacitor.config.json"
+      - "native/**"
       - ".github/workflows/build-apk.yml"
 
 jobs:
@@ -41,6 +42,25 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+
+      - name: Add native barcode scanner
+        run: |
+          if [ ! -d native/plugins ]; then
+            echo "native/plugins folder not found, skipping native scanner"
+            exit 0
+          fi
+          APPID=$(node -p "require('./capacitor.config.json').appId")
+          DIR="android/app/src/main/java/$(echo "$APPID" | tr . /)"
+          mkdir -p "$DIR/plugins"
+          rm -f "$DIR/MainActivity.java"
+          sed "s/com\.brothershoes\.app/$APPID/g" native/plugins/MainActivity.kt > "$DIR/MainActivity.kt"
+          sed "s/com\.brothershoes\.app/$APPID/g" native/plugins/BarcodeScanPlugin.kt > "$DIR/plugins/BarcodeScanPlugin.kt"
+          sed -i "s/.*com.android.tools.build:gradle.*/&\n        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24'/" android/build.gradle
+          sed -i "s/^apply plugin: 'com.android.application'/&\napply plugin: 'kotlin-android'/" android/app/build.gradle
+          sed -i "s/^android {/android {\n    kotlinOptions { jvmTarget = '17' }/" android/app/build.gradle
+          sed -i "s/^dependencies {/dependencies {\n    implementation 'com.google.android.gms:play-services-code-scanner:16.1.0'/" android/app/build.gradle
+          echo "--- app id: $APPID"
+          ls -R "$DIR"
 
       - name: Set app icon
         run: |
