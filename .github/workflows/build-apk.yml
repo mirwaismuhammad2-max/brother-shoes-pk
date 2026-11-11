@@ -62,6 +62,13 @@ jobs:
           echo "--- app id: $APPID"
           ls -R "$DIR"
 
+      - name: Allow camera
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's#</manifest>#    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n</manifest>#' "$M"
+          cat "$M"
+          grep -q "android.permission.CAMERA" "$M" || { echo "CAMERA permission missing"; exit 1; }
+
       - name: Set app icon
         run: |
           cd android/app/src/main/res
