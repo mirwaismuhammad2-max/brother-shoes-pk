@@ -26,6 +26,75 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Restore project config files if they are missing
+        run: |
+          [ -f capacitor.config.json ] || cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.brothershoespk.app",
+            "appName": "Brother Shoes",
+            "webDir": "www",
+            "server": { "androidScheme": "https" }
+          }
+          EOF
+          [ -f package.json ] || cat > package.json <<'EOF'
+          {
+            "name": "brother-shoes",
+            "version": "1.0.0",
+            "private": true,
+            "dependencies": {
+              "@capacitor/android": "^6.2.0",
+              "@capacitor/core": "^6.2.0",
+              "@capacitor/screen-orientation": "^6.0.0"
+            },
+            "devDependencies": {
+              "@capacitor/cli": "^6.2.0"
+            }
+          }
+          EOF
+          mkdir -p native/plugins
+          [ -f native/plugins/MainActivity.kt ] || cat > native/plugins/MainActivity.kt <<'EOF'
+          package com.brothershoes.app
+
+          import android.os.Bundle
+          import com.brothershoes.app.plugins.BarcodeScanPlugin
+          import com.getcapacitor.BridgeActivity
+
+          class MainActivity : BridgeActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  registerPlugin(BarcodeScanPlugin::class.java)
+                  super.onCreate(savedInstanceState)
+              }
+          }
+          EOF
+          [ -f native/plugins/BarcodeScanPlugin.kt ] || cat > native/plugins/BarcodeScanPlugin.kt <<'EOF'
+          package com.brothershoes.app.plugins
+
+          import com.getcapacitor.JSObject
+          import com.getcapacitor.Plugin
+          import com.getcapacitor.PluginCall
+          import com.getcapacitor.PluginMethod
+          import com.getcapacitor.annotation.CapacitorPlugin
+          import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
+          import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
+
+          @CapacitorPlugin(name = "BarcodeScan")
+          class BarcodeScanPlugin : Plugin() {
+              @PluginMethod
+              fun scan(call: PluginCall) {
+                  val options = GmsBarcodeScannerOptions.Builder().build()
+                  GmsBarcodeScanning.getClient(activity, options).startScan()
+                      .addOnSuccessListener { barcode ->
+                          val o = JSObject()
+                          o.put("value", barcode.rawValue ?: "")
+                          call.resolve(o)
+                      }
+                      .addOnCanceledListener { call.reject("Scan cancelled") }
+                      .addOnFailureListener { e -> call.reject(e.message ?: "Scan failed") }
+              }
+          }
+          EOF
+          ls -R native
+
       - name: Prepare web files (with Firebase SDK bundled inside the app)
         run: |
           mkdir -p www
@@ -172,10 +241,6 @@ jobs:
 
       - name: Add native barcode scanner
         run: |
-          if [ ! -d native/plugins ]; then
-            echo "native/plugins folder not found, skipping native scanner"
-            exit 0
-          fi
           APPID=$(node -p "require('./capacitor.config.json').appId")
           DIR="android/app/src/main/java/$(echo "$APPID" | tr . /)"
           mkdir -p "$DIR/plugins"
