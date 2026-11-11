@@ -798,7 +798,7 @@ const drive=B.drive={tok:null,exp:0,client:null,timer:null,busy:false,
  async token(interactive){if(drive.tok&&Date.now()<drive.exp-60000)return drive.tok;await drive.lib();
   return new Promise((res,rej)=>{if(!drive.client)drive.client=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:'https://www.googleapis.com/auth/drive.file',callback:()=>{}});
    drive.client.callback=r=>{if(r.error)return rej(new Error(r.error));drive.tok=r.access_token;drive.exp=Date.now()+(+r.expires_in||3600)*1000;LS.set('bs_drive','1');res(drive.tok)};
-   drive.client.error_callback=x=>rej(new Error((x&&x.type)||'popup_failed'));
+   drive.client.error_callback=x=>{const t=(x&&x.type)||'popup_failed';rej(new Error(t==='popup_failed_to_open'?'the Google sign-in popup was blocked'+((window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform())?'. Google sign-in does not work inside the installed APK. Open the website in Chrome to use Drive backup':'. Tap Backup now'):t))};
    try{drive.client.requestAccessToken({prompt:''})}catch(e){rej(e)}})},
  async api(t,url,opt){const r=await fetch(url,Object.assign({},opt,{headers:Object.assign({Authorization:'Bearer '+t},(opt&&opt.headers)||{})}));if(!r.ok){const x=new Error('Drive '+r.status);x.status=r.status;throw x}return r},
  async folder(t,force){let id=force?'':LS.get('bs_dfolder','');if(id)return id;
@@ -838,7 +838,14 @@ function scheduleClosing(){if(!GOOGLE_CLIENT_ID||real!=='Owner')return;
  const chk=()=>{if(LS.get('bs_drive','')!=='1')return;const n=new Date(),[h,m]=String(settings.closing||'21:00').split(':').map(Number);
   if(LS.get('bs_dday','')!==n.toDateString()&&(n.getHours()*60+n.getMinutes())>=(h*60+m))drive.backup(false,true)};
  setInterval(chk,60000);setTimeout(chk,5000);
- if(LS.get('bs_drive','')==='1'&&navigator.onLine)drive.token(false).catch(()=>{})}
+ if(LS.get('bs_drive','')==='1'&&navigator.onLine)drive.token(false).catch(()=>{});
+ if(LS.get('bs_drive','')==='1'){drive.lib().catch(()=>{});driveGesture()}}
+/* A browser only lets Google's sign-in popup open right after a tap. So when a backup is due and the Drive pass has expired, the next tap in the app runs it. */
+function driveDue(){if(LS.get('bs_drive','')!=='1'||real!=='Owner'||!navigator.onLine)return false;const n=new Date(),[h,m]=String(settings.closing||'21:00').split(':').map(Number),last=+LS.get('bs_dlast','0');
+ return LS.get('bs_dq','')==='1'||(LS.get('bs_dday','')!==n.toDateString()&&(n.getHours()*60+n.getMinutes())>=(h*60+m))||(Date.now()-last>26*3600*1000)}
+let driveTry=0;
+function driveGesture(){if(driveGesture.on)return;driveGesture.on=true;
+ document.addEventListener('pointerdown',()=>{if(drive.busy||!driveDue())return;if(Date.now()-driveTry<120000)return;driveTry=Date.now();drive.backup(false,true)},true)}
 addEventListener('online',()=>{stat();if(fb.db&&cloud.on())fb.db.waitForPendingWrites().then(()=>{if(pending===0)mark()}).catch(()=>{});if(LS.get('bs_dq','')==='1')drive.backup(false,true);toast('Back online','')});
 addEventListener('offline',()=>{stat();toast('Offline: the app keeps working. Changes sync later.','')});
 
@@ -975,7 +982,7 @@ async function webScan(){
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!('BarcodeDetector' in window))return toast('Scanning is not supported in this browser. Use Chrome on Android.','err');
  if(scanStop)return;
  let det;try{const want=['code_128','ean_13','ean_8','upc_a','upc_e','code_39','qr_code'],have=await BarcodeDetector.getSupportedFormats();det=new BarcodeDetector({formats:want.filter(f=>have.includes(f))})}catch(e){return toast('Scanner could not start','err')}
- let stream;try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})}catch(e){return toast('Camera permission is needed to scan','err')}
+ let stream;try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})}catch(e){const n=e&&e.name;return toast(n==='NotFoundError'||n==='OverconstrainedError'?'No camera found on this device':n==='NotReadableError'?'The camera is busy. Close other apps using it and try again.':'Camera is blocked. Open Android Settings > Apps > Brother Shoes > Permissions > Camera > Allow, then try again.','err')}
  const box=document.createElement('div');box.id='scanbox';
  box.innerHTML='<video playsinline muted autoplay></video><div class="sf"></div><p>Point the camera at a barcode or QR code</p><button type="button">Cancel</button>';
  document.body.appendChild(box);const v=box.querySelector('video');v.srcObject=stream;v.play().catch(()=>{});

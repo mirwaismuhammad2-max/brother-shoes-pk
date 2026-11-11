@@ -1,6 +1,6 @@
 /* Brother Shoes service worker: lets the app open with no internet.
    Change VERSION whenever you upload a new version of the app. */
-const VERSION='bs-v5';
+const VERSION='bs-v6';
 const CORE=['./','index.html','manifest.json','logo.png','icon-192.png','icon-512.png','intro.mp4',
  'firebase-app-compat.js','firebase-auth-compat.js','firebase-firestore-compat.js'];
 
