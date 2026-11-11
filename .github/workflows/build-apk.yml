@@ -38,6 +38,132 @@ jobs:
       - name: Install Capacitor
         run: npm install
 
+      - name: Add native Google Drive sign-in plugin
+        run: |
+          D=native/gdrive
+          mkdir -p $D/android/src/main/java/com/brothershoes/gdrive
+          cat > $D/package.json <<'EOF'
+          {
+            "name": "capacitor-gdrive",
+            "version": "1.0.0",
+            "description": "Native Google Drive access token for Brother Shoes",
+            "capacitor": { "android": { "src": "android" } },
+            "peerDependencies": { "@capacitor/core": ">=6.0.0" }
+          }
+          EOF
+          cat > $D/android/src/main/AndroidManifest.xml <<'EOF'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"></manifest>
+          EOF
+          cat > $D/android/build.gradle <<'EOF'
+          apply plugin: 'com.android.library'
+
+          android {
+              namespace "com.brothershoes.gdrive"
+              compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 34
+              defaultConfig {
+                  minSdkVersion project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 22
+                  targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+
+          repositories {
+              google()
+              mavenCentral()
+          }
+
+          dependencies {
+              implementation project(':capacitor-android')
+              implementation 'com.google.android.gms:play-services-auth:21.2.0'
+          }
+          EOF
+          cat > $D/android/src/main/java/com/brothershoes/gdrive/GDrivePlugin.java <<'EOF'
+          package com.brothershoes.gdrive;
+
+          import android.app.Activity;
+          import android.content.Intent;
+          import android.content.IntentSender;
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+          import com.google.android.gms.auth.api.identity.AuthorizationRequest;
+          import com.google.android.gms.auth.api.identity.AuthorizationResult;
+          import com.google.android.gms.auth.api.identity.Identity;
+          import com.google.android.gms.common.api.ApiException;
+          import com.google.android.gms.common.api.Scope;
+          import java.util.Collections;
+
+          @CapacitorPlugin(name = "GDrive", requestCodes = {9301})
+          public class GDrivePlugin extends Plugin {
+              private static final int REQ = 9301;
+
+              @PluginMethod
+              public void getToken(final PluginCall call) {
+                  final boolean interactive = call.getBoolean("interactive", true);
+                  AuthorizationRequest request = AuthorizationRequest.builder()
+                      .setRequestedScopes(Collections.singletonList(new Scope("https://www.googleapis.com/auth/drive.file")))
+                      .build();
+                  Identity.getAuthorizationClient(getActivity()).authorize(request)
+                      .addOnSuccessListener(result -> {
+                          if (result.hasResolution()) {
+                              if (!interactive) {
+                                  call.reject("Google permission needed. Tap Connect.");
+                                  return;
+                              }
+                              try {
+                                  saveCall(call);
+                                  getActivity().startIntentSenderForResult(result.getPendingIntent().getIntentSender(), REQ, null, 0, 0, 0, null);
+                              } catch (IntentSender.SendIntentException e) {
+                                  call.reject("Could not open Google permission screen: " + e.getMessage());
+                              }
+                          } else {
+                              finish(call, result);
+                          }
+                      })
+                      .addOnFailureListener(e -> call.reject("Google sign-in failed: " + e.getMessage()));
+              }
+
+              @Override
+              protected void handleOnActivityResult(int requestCode, int resultCode, Intent data) {
+                  super.handleOnActivityResult(requestCode, resultCode, data);
+                  if (requestCode != REQ) return;
+                  PluginCall call = getSavedCall();
+                  if (call == null) return;
+                  if (resultCode != Activity.RESULT_OK) {
+                      call.reject("Google permission was cancelled");
+                  } else {
+                      try {
+                          AuthorizationResult r = Identity.getAuthorizationClient(getActivity()).getAuthorizationResultFromIntent(data);
+                          finish(call, r);
+                      } catch (ApiException e) {
+                          call.reject("Google sign-in failed: " + e.getMessage());
+                      }
+                  }
+                  freeSavedCall();
+              }
+
+              private void finish(PluginCall call, AuthorizationResult r) {
+                  String token = r.getAccessToken();
+                  if (token == null) {
+                      call.reject("Google did not return an access token");
+                      return;
+                  }
+                  JSObject o = new JSObject();
+                  o.put("accessToken", token);
+                  call.resolve(o);
+              }
+          }
+          EOF
+          npm install ./native/gdrive
+          ls -R native/gdrive
+
       - name: Create Android project
         run: |
           npx cap add android
@@ -79,6 +205,29 @@ jobs:
             cp "$GITHUB_WORKSPACE/icon-512.png" "mipmap-$d/ic_launcher_round.png"
             cp "$GITHUB_WORKSPACE/icon-512.png" "mipmap-$d/ic_launcher_foreground.png"
           done
+
+      - name: Use permanent signing key (keeps Google sign-in working)
+        run: |
+          echo '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' | base64 -d > android/app/brothershoes.keystore
+          python3 - <<'PY'
+          import re
+          p = 'android/app/build.gradle'
+          s = open(p).read()
+          snip = """android {
+              signingConfigs {
+                  debug {
+                      storeFile file("brothershoes.keystore")
+                      storePassword "brothershoes"
+                      keyAlias "brothershoes"
+                      keyPassword "brothershoes"
+                  }
+              }"""
+          assert re.search(r'^android \{', s, re.M), 'android block not found'
+          s = re.sub(r'^android \{', lambda m: snip, s, count=1, flags=re.M)
+          open(p, 'w').write(s)
+          PY
+          echo "--- App signing SHA-1 (put this in Google Cloud, Android client):"
+          keytool -list -v -keystore android/app/brothershoes.keystore -storepass brothershoes | grep SHA1
 
       - name: Build APK
         working-directory: android
