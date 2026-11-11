@@ -356,7 +356,7 @@ const firebaseConfig = {
    While it is empty, the Drive buttons are hidden and the app shows
    "Drive not set up yet". Everything else keeps working.
    ================================================================ */
-const GOOGLE_CLIENT_ID = "";
+const GOOGLE_CLIENT_ID = (function(){var v="";try{v=localStorage.getItem("bs_gcid")||""}catch(e){}return v})();
 /* ===================== END OF SETTINGS BLOCK ===================== */
 
 </script>
@@ -726,7 +726,7 @@ const SEC={
    :`<div class="rw"><span><b>${esc(x.u.name||nice(x.u.email))}</b><small>${esc(nice(x.u.email))} · ${x.u.active===false?'disabled':'active'}</small></span><span class="row" style="flex-wrap:nowrap">${x.u.uid===B.uid()?'<small>You</small>':`<select class="in2" style="width:auto;margin:0" data-act="role" data-u="${esc(x.u.uid)}" aria-label="Role">${['owner','staff','partner'].map(r=>`<option value="${r}" ${x.u.role===r?'selected':''}>${cap(r)}</option>`).join('')}</select><button type="button" class="bt s ${x.u.active===false?'p':'d'}" data-act="active" data-u="${esc(x.u.uid)}" data-v="${x.u.active===false?1:0}">${x.u.active===false?'Enable':'Disable'}</button>`}</span></div>`;
   return[...pack('Invite a person',[[3.5,`<p>They open the app, press Sign up, and use the same email or username.</p>`],[hi(),`<div><label for="iN">Name</label><input class="in2" id="iN" data-i="name" value="${esc(v.name)}"></div>`],[hi(),`<div><label for="iE">Email or username</label><input class="in2" id="iE" data-i="email" autocapitalize="none" value="${esc(v.email)}"></div>`],[hi(),`<div><label for="iR">Role</label><select class="in2" id="iR" data-i="role"><option value="staff" ${v.role==='staff'?'selected':''}>Staff</option><option value="partner" ${v.role==='partner'?'selected':''}>Partner (view-only)</option></select></div>`],[ht(),`<div class="row"><button type="button" class="bt p" data-act="invite" ${own?'':'disabled'}>Invite</button></div>`]]),
    ...listPages('People',items,row,'No other people yet.')]},
- drive(){if(!GOOGLE_CLIENT_ID)return pack('Google Drive backup',[[5,`<p><b>Drive not set up yet.</b> Paste your Google Client ID in index.html (see README). The rest of the app works without it.</p>`]]);
+ drive(){if(!GOOGLE_CLIENT_ID)return pack('Google Drive backup',[[7,`<p><b>Drive is not set up yet.</b> Create a Google Client ID (steps are in your chat notes / README, part B), then tap the button below and paste it. Open the app in <b>Chrome</b> (the website), not the installed APK, to use Drive. The rest of the app works without it.</p>`],[ht(),`<div class="row"><button type="button" class="bt p" data-act="dSetId">Enter Google Client ID</button></div>`]]);
   if(real!=='Owner')return pack('Google Drive backup',[[3,`<p>Only the owner can use Drive backup.</p>`]]);
   const own=!dev.lock&&!view,lb=+LS.get('bs_dlast','0'),conn=LS.get('bs_drive','')==='1',d=own?'':'disabled',b=(a,c,t)=>[ht(),`<div class="row"><button type="button" class="bt ${c}" data-act="${a}" ${d}>${t}</button></div>`];
   return pack('Google Drive backup',[[4,`<p>${conn?'Connected. ':'Not connected. '}Last backup: ${lb?fdt(lb):'never'}${LS.get('bs_dq','')==='1'?'<br><b>A backup is waiting. Tap Backup now.</b>':''}</p>`],[4,`<p>Automatic: daily at closing time and after big changes. The last 30 are kept in "Brother Shoes Backup".</p>`],b('dConnect','p','Connect Google Drive'),b('dNow','','Backup now'),b('dRestore','d','Restore from Drive')])},
@@ -779,7 +779,7 @@ const ACT={
   B.deleted[c]=list.filter(x=>x.id!==id);
   if(c==='articles')S.items.push(Object.assign({},r,{deleted:false}));else{S.expl.push(Object.assign({},r,{deleted:false}));S.exp+=r.amt}
   sv();cloud.soft(c,id,false,c==='expenses'?b=>b.set(doc('state','main'),{exp:inc(r.amt)},{merge:true}):null);shRender();toast('Restored')},
- dConnect(){drive.connect()},dNow(){drive.backup(true)},dRestore(){drive.restore()}
+ dSetId(){if(!B.can('owner'))return;ask('Google Client ID',[{l:'Paste the Client ID (ends with .apps.googleusercontent.com)'}],v=>{const c=String(v[0]||'').trim();if(!/^[\w.-]+\.apps\.googleusercontent\.com$/.test(c))return toast('That does not look like a Google Client ID','err');LS.set('bs_gcid',c);toast('Saved. Reloading...');setTimeout(()=>location.reload(),900)})},dConnect(){drive.connect()},dNow(){drive.backup(true)},dRestore(){drive.restore()}
 };
 (()=>{const sh=$('#sheet');
  sh.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(!t||t.tagName==='SELECT'||t.tagName==='INPUT')return;(ACT[t.dataset.act]||(()=>{}))(t)});
