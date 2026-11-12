@@ -282,6 +282,7 @@ html,body{background:#06112a!important;color-scheme:dark}
 .lbc{flex:1;min-height:0;margin:.6mm 0}.lbc svg{width:100%;height:100%;display:block}.lbn{font-size:2.6mm;text-align:center;font-family:monospace}
 @media print{@page{margin:4mm}#lbp:not(.on){display:none!important}body.lbmode #rc{display:none!important}#lbp.on{position:static!important;display:block!important;overflow:visible!important;background:#fff!important;color:#000!important;padding:0!important}.lbhd,.lbctl{display:none!important}#lbs{justify-content:start}}
 #sa button.dg{background:#6a2433}#sa button.x{min-height:32px;padding:0 10px;margin-left:.4rem}
+#stk{position:fixed;inset:0;z-index:60;background:rgba(5,10,24,.98);color:#e8f0ff;display:none;overflow-y:auto;padding:.8rem;font:15px system-ui}#stk.on{display:block}#stk .w{max-width:34rem;margin:0 auto}#stk button{border:0;border-radius:99px;min-height:42px;padding:0 14px;background:#1a2a48;color:#fff;font:inherit}#stk button.p{background:linear-gradient(135deg,#2f7bff,#12c39a);font-weight:600}#stk button.dg{background:#6a2433}#stk .rw{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.4rem 0;border-top:1px solid #243558}#stk small{color:#9fb4dc}#stk h3{margin:1rem 0 .2rem}
 </style>
 </head><body>
 <div id="boot"><img src="logo.png" alt="Brother Shoes"><p>BROTHER SHOES</p></div>
@@ -681,11 +682,11 @@ B.logoPicked=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
 /* ---------- receipts ---------- */
 B.receipt=r=>{const d=new Date(r.t||Date.now());
  const lines=r.lines.map(([a,b])=>`<div class="rl"><span>${esc(a)}</span><b>${esc(b)}</b></div>`).join('');
- $('#rc').innerHTML=`<div class="rcw"><div class="rcp"><div class="rch"><img src="${esc(settings.logo||'logo.png')}" alt=""><h2>${esc(settings.shopName||'Brother Shoes')}</h2>${settings.address?`<p>${esc(settings.address)}</p>`:''}${settings.phone?`<p>Tel: ${esc(settings.phone)}</p>`:''}</div><h3>${esc(r.title)}</h3><div class="rl"><span>No.</span><b>${esc(r.no)}</b></div><div class="rl"><span>Date</span><b>${esc(d.toLocaleString())}</b></div>${lines}<div class="rl tot"><span>${esc(r.totalLabel||'Total')}</span><b>${fmt(Math.abs(r.total))}</b></div><p class="ty">Thank you!</p></div><div class="rcb"><button class="bt p" data-r="print">Print / Save PDF</button><button class="bt" data-r="share">Share</button><button class="bt" data-r="close">Close</button></div></div>`;
+ $('#rc').innerHTML=`<div class="rcw"><div class="rcp"><div class="rch"><img src="${esc(settings.logo||'logo.png')}" alt=""><h2>${esc(settings.shopName||'Brother Shoes')}</h2>${settings.address?`<p>${esc(settings.address)}</p>`:''}${settings.phone?`<p>Tel: ${esc(settings.phone)}</p>`:''}</div><h3>${esc(r.title)}</h3><div class="rl"><span>No.</span><b>${esc(r.no)}</b></div><div class="rl"><span>Date</span><b>${esc(d.toLocaleString())}</b></div>${lines}<div class="rl tot"><span>${esc(r.totalLabel||'Total')}</span><b>${fmt(Math.abs(r.total))}</b></div><p class="ty">Thank you!</p></div><div class="rcb"><button class="bt p" data-r="pdf">Save PDF</button><button class="bt p" data-r="spdf">Share PDF</button><button class="bt" data-r="share">Share text</button><button class="bt" data-r="print">Print</button><button class="bt" data-r="close">Close</button></div></div>`;
  $('#rc').classList.add('on');$('#rc')._r=r;requestAnimationFrame(fitRc)};
 $('#rc').addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(!b)return;const a=b.dataset.r,r=$('#rc')._r||{};
  if(a==='close')$('#rc').classList.remove('on');
- else if(a==='print')window.print();
+ else if(a==='print')window.print();else if(a==='pdf'||a==='spdf'){if(window.rcPDF)window.rcPDF(r,a==='spdf')}
  else if(a==='share'){const t=[settings.shopName,settings.address,settings.phone?'Tel: '+settings.phone:'',r.title+' '+r.no,...(r.lines||[]).map(x=>x[0]+': '+x[1]),(r.totalLabel||'Total')+': '+fmt(Math.abs(r.total))].filter(Boolean).join('\n');
   if(navigator.share)navigator.share({title:r.title,text:t}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast('Receipt copied'),()=>toast('Could not copy','err'))}});
 
@@ -757,7 +758,7 @@ const SEC={
   const own=!dev.lock&&!view,lb=+LS.get('bs_dlast','0'),conn=LS.get('bs_drive','')==='1',d=own?'':'disabled',b=(a,c,t)=>[ht(),`<div class="row"><button type="button" class="bt ${c}" data-act="${a}" ${d}>${t}</button></div>`];
   return pack('Google Drive backup',[[4,`<p>${conn?'Connected. ':'Not connected. '}Last backup: ${lb?fdt(lb):'never'}${LS.get('bs_dq','')==='1'?'<br><b>A backup is waiting. Tap Backup now.</b>':''}</p>`],[4,`<p>Automatic: daily at closing time and after big changes. The last 30 are kept in "Brother Shoes Backup".</p>`],b('dConnect','p','Connect Google Drive'),b('dNow','','Backup now'),b('dRestore','d','Restore from Drive')])},
  articles(){const w=B.can('write',true);
-  return listPages('Saved articles',S.items.slice().reverse(),r=>`<div class="rw"><span>${r.photo?`<img class="pv" style="width:2rem;height:2rem;border-radius:.5rem;vertical-align:middle;margin-right:.4rem" src="${esc(r.photo)}" alt="">`:''}<b>${esc(r.no)}</b> · ${esc(r.brand||'-')}<small>${esc(r.type)} · ${esc(r.cat)} · tag ${fmt(r.tag||0)}${B.can('buy',true)?' · buy '+fmt(r.buy||0):''}</small></span>${w?`<button type="button" class="bt d s" data-act="delArt" data-id="${esc(r.id)}">Remove</button>`:''}</div>`,'No articles saved yet. Use the Add Article screen.')},
+  return listPages('Saved articles',S.items.slice().reverse(),r=>`<div class="rw"><span>${r.photo?`<img class="pv" style="width:2rem;height:2rem;border-radius:.5rem;vertical-align:middle;margin-right:.4rem" src="${esc(r.photo)}" alt="">`:''}<b>${esc(r.no)}</b> · ${esc(r.brand||'-')}<small>${esc(r.type)} · ${esc(r.cat)} · tag ${fmt(r.tag||0)}${B.can('buy',true)?' · buy '+fmt(r.buy||0):''}</small></span><span class="row" style="flex-wrap:nowrap"><button type="button" class="bt s" data-act="stock" data-id="${esc(r.id)}">Stock</button>${w?`<button type="button" class="bt d s" data-act="delArt" data-id="${esc(r.id)}">Remove</button>`:''}</span></div>`,'No articles saved yet. Use the Add Article screen.')},
  expenses(){const w=B.can('write',true);
   return listPages('Expenses added',S.expl.slice().reverse(),r=>`<div class="rw"><span>${esc(r.what||'-')}<small>${fdt(r.t)}</small></span><span class="row" style="flex-wrap:nowrap"><b>${fmt(r.amt)}</b>${w?`<button type="button" class="bt d s" data-act="delExp" data-id="${esc(r.id)}">Remove</button>`:''}</span></div>`,'No expenses added yet.')},
  removed(){const own=!dev.lock&&!view;const dl=[...(B.deleted.articles||[]).map(r=>['articles',r,'Article '+r.no+' · '+(r.brand||'')]),...(B.deleted.expenses||[]).map(r=>['expenses',r,'Expense '+(r.what||'-')+' · '+fmt(r.amt)]),...(B.deleted.supplierPayments||[]).map(r=>['supplierPayments',r,'Supplier '+(r.supplier||'-')+' · '+(r.type==='New bill'?'Bill '+(r.bill||'')+' '+fmt(r.amt):r.type==='Proof'?'Photo':'Paid '+fmt(r.amt))])];
@@ -797,6 +798,7 @@ const ACT={
  revoke(el){if(!B.can('owner'))return;confirmBox('Remove this invitation?',()=>{cloud.commit(b=>b.delete(doc('invites',el.dataset.k)));toast('Invitation removed')})},
  role(el){if(!B.can('owner'))return;cloud.commit(b=>b.update(doc('users',el.dataset.u),{role:el.value}));toast('Role changed')},
  active(el){if(!B.can('owner'))return;const v=el.dataset.v==='1';confirmBox(v?'Enable this account again?':'Disable this account? They will be logged out. Their data stays.',()=>{cloud.commit(b=>b.update(doc('users',el.dataset.u),{active:v}));toast(v?'User enabled':'User disabled')})},
+ stock(el){if(window.BS_stock)window.BS_stock(el.dataset.id)},
  delArt(el){if(!B.can('write'))return;const r=S.items.find(x=>x.id===el.dataset.id);if(!r)return;
   confirmBox('Remove article '+r.no+'? It is only hidden and can be restored from Settings.',()=>{S.items=S.items.filter(x=>x.id!==r.id);B.deleted.articles.push(Object.assign({},r,{deletedAt:Date.now()}));sv();cloud.soft('articles',r.id,true);shRender();toast('Article '+r.no+' removed (can be restored in Settings)')},'Remove')},
  delExp(el){if(!B.can('write'))return;const r=S.expl.find(x=>x.id===el.dataset.id);if(!r)return;
@@ -959,7 +961,7 @@ function sell(){if(!BS.can('sell'))return;const a=art();if(!a)return toast('Sear
  const go2=n=>{ensureQ(a);bumpQ(a,s,-1);const rec={id:BS.id(),t:Date.now(),by:BS.uid(),a:a.no,aid:a.id,s,p:price,m:sel.pay,c:n||''};S.sales.push(rec);if(rec.m=='Credit')S.credits.push({id:rec.id,t:rec.t,kind:'udhaar',customer:rec.c,amt:rec.p,saleId:rec.id});BS.cloud.sale(rec,s);sv();BS.receipt({t:rec.t,no:'S-'+rec.id.slice(-6).toUpperCase(),title:'Sale receipt',lines:[['Article',a.no],['Size',''+s],['Payment',rec.m+(rec.c?' ('+rec.c+')':'')]],total:rec.p});toast(`Sold ${a.no} / size ${s} / ${fmt(rec.p)} (${sel.pay}${n?', '+n:''}). ${qtyOf(a,s)} left in size ${s}.`);render()};
  sel.pay=='Credit'?ask('Customer name',[{l:'Name'}],v=>v[0].trim()?go2(v[0].trim()):toast('Name required for credit')):go2()}
 function saveArt(){if(!BS.can('write'))return;if(!(val.no||'').trim())return toast('Enter the article number');
- {const rec={id:BS.id(),t:Date.now(),by:BS.uid(),no:val.no.trim(),brand:val.brand||'',type:sel.type,cat:sel.cat,color:val.color||'',buy:+val.buy||0,tag:+val.tag||0,min:+val.min||0,sizes:pend.sizes||'',q:parseSizes(pend.sizes),photo:pend.photoData||'',bc:pend.bc?[{c:pend.bc,s:''}]:[]};S.items.push(rec);BS.cloud.add('articles',rec)}sv();
+ {const rec={id:BS.id(),t:Date.now(),by:BS.uid(),no:val.no.trim(),brand:val.brand||'',type:sel.type,cat:sel.cat,color:val.color||'',buy:+val.buy||0,tag:+val.tag||0,min:+val.min||0,sizes:pend.sizes||'',q:parseSizes(pend.sizes),hist:Object.entries(parseSizes(pend.sizes)).map(([s,d])=>({t:Date.now(),by:BS.uid(),s,d,n:'New article'})),photo:pend.photoData||'',bc:pend.bc?[{c:pend.bc,s:''}]:[]};S.items.push(rec);BS.cloud.add('articles',rec)}sv();
  toast(`Saved article ${val.no} (${sel.type}, ${sel.cat}). ${S.items.length} saved.`);['no','brand','color','buy','tag','min'].forEach(k=>val[k]='');pend={};render()}
 let retSale=null,LBI=[],LBS=[50,30];
 function openSales(){const done=new Set(S.rets.map(r=>r.saleId).filter(Boolean));return S.sales.filter(s=>!s.deleted&&!done.has(s.id)).sort((a,b)=>(b.t||0)-(a.t||0))}
@@ -1032,17 +1034,61 @@ function lbPDF(items,sz,mode){const MM=72/25.4,lw=sz[0]*MM,lh=sz[1]*MM,roll=mode
  const n=4+np*2,xr=o.length;o+='xref\n0 '+(n+1)+'\n0000000000 65535 f \n'+off.slice(1).map(v=>String(v).padStart(10,'0')+' 00000 n \n').join('')+'trailer\n<</Size '+(n+1)+'/Root 1 0 R>>\nstartxref\n'+xr+'\n%%EOF';
  const u=new Uint8Array(o.length);for(let i=0;i<o.length;i++)u[i]=o.charCodeAt(i)&255;return new Blob([u],{type:'application/pdf'})}
 async function lbSave(share){if(!LBI.length)return toast('Make labels first','err');
- try{const blob=lbPDF(LBI,LBS,($('#lbm')||{}).value||'a4'),fn='labels-'+new Date().toISOString().slice(0,10)+'.pdf',P=NP();
-  const b64=()=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(blob)});
-  if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()&&P.Filesystem){
-   const w=await P.Filesystem.writeFile({path:fn,data:await b64(),directory:share?'CACHE':'DOCUMENTS',recursive:true});
-   if(share&&P.Share){await P.Share.share({title:'Barcode labels',url:w.uri,dialogTitle:'Send labels'});return}
-   return toast(share?'Saved in Documents. Open it from there to send.':'PDF saved in Documents: '+fn)}
-  const f=new File([blob],fn,{type:'application/pdf'});
-  if(share&&navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Barcode labels'});return}
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
-  toast(share?'Sharing is not supported here. PDF saved to Downloads: send it from there.':'PDF saved to Downloads: '+fn)}
- catch(e){if(/cancel|abort/i.test((e&&(e.name+' '+e.message))||''))return;toast('Could not make the PDF: '+((e&&e.message)||e),'err')}}
+ try{await saveBlob(lbPDF(LBI,LBS,($('#lbm')||{}).value||'a4'),'labels-'+new Date().toISOString().slice(0,10)+'.pdf',share,'Barcode labels')}catch(e){toast('Could not make the PDF: '+((e&&e.message)||e),'err')}}
+
+/* ---------- one save/share routine for every PDF (labels, receipts). It only says "saved" when it really was. ---------- */
+async function saveBlob(blob,fn,share,title){const P=NP(),app=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()),wv=app||/; wv\)/.test(navigator.userAgent);
+ const b64=()=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(blob)});
+ const stuck=()=>BS.confirm('This installed app cannot save files to the phone (it has no Filesystem/Share plugin). Open the website in Chrome and try again, or ask your developer to add the Capacitor Filesystem and Share plugins to the APK.',()=>{},'OK');
+ try{
+  if(app&&P.Filesystem){const F=P.Filesystem,viaShare=async()=>{const w=await F.writeFile({path:fn,data:await b64(),directory:'CACHE',recursive:true});await P.Share.share({title,url:w.uri,dialogTitle:'Send or save'})};
+   if(share&&P.Share){await viaShare();return true}
+   try{if(F.requestPermissions)await F.requestPermissions().catch(()=>{});await F.writeFile({path:fn,data:await b64(),directory:'DOCUMENTS',recursive:true});await F.stat({path:fn,directory:'DOCUMENTS'});toast('Saved in the Documents folder: '+fn);return true}
+   catch(x){if(P.Share){await viaShare();return true}throw x}}
+  const f=new File([blob],fn,{type:blob.type}),can=!!(navigator.canShare&&navigator.canShare({files:[f]}));
+  if(can&&(share||wv)){await navigator.share({files:[f],title});return true}
+  if(wv){stuck();return false}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;a.style.display='none';document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},60000);
+  toast(share?'Sharing is not supported here, so the file was downloaded: '+fn:'Download started: '+fn+'. Check your Downloads or notifications.');return true}
+ catch(e){if(/cancel|abort/i.test((e&&(e.name+' '+e.message))||''))return false;toast('Could not save the file: '+((e&&e.message)||e),'err');return false}}
+function pdfKit(){const cx=document.createElement('canvas').getContext('2d'),tw=(t,s,b)=>{cx.font=(b?'bold ':'')+s+'px Helvetica,Arial,sans-serif';return cx.measureText(t).width};
+ return{tw,fit:(t,s,b,mw)=>{t=String(t);while(t.length>1&&tw(t,s,b)>mw)t=t.slice(0,-1);return t},T:(t,x,y,s,b)=>'BT /F'+(b?2:1)+' '+s.toFixed(2)+' Tf '+x.toFixed(2)+' '+y.toFixed(2)+' Td ('+String(t).replace(/[^\x20-\xff]/g,'?').replace(/[()\\]/g,m=>'\\'+m)+') Tj ET\n'}}
+function pdfBuild(pages,W,Hh){let o='%PDF-1.4\n';const off=[],put=(n,b)=>{off[n]=o.length;o+=n+' 0 obj\n'+b+'\nendobj\n'},np=pages.length;
+ put(1,'<</Type/Catalog/Pages 2 0 R>>');put(2,'<</Type/Pages/Count '+np+'/Kids ['+pages.map((_,i)=>(5+i*2)+' 0 R').join(' ')+']>>');
+ put(3,'<</Type/Font/Subtype/Type1/BaseFont/Helvetica/Encoding/WinAnsiEncoding>>');put(4,'<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Bold/Encoding/WinAnsiEncoding>>');
+ pages.forEach((c,i)=>{const q=5+i*2;put(q,'<</Type/Page/Parent 2 0 R/MediaBox [0 0 '+W.toFixed(2)+' '+Hh.toFixed(2)+']/Resources<</Font<</F1 3 0 R/F2 4 0 R>>>>/Contents '+(q+1)+' 0 R>>');put(q+1,'<</Length '+c.length+'>>\nstream\n'+c+'endstream')});
+ const n=4+np*2,xr=o.length;o+='xref\n0 '+(n+1)+'\n0000000000 65535 f \n'+off.slice(1).map(v=>String(v).padStart(10,'0')+' 00000 n \n').join('')+'trailer\n<</Size '+(n+1)+'/Root 1 0 R>>\nstartxref\n'+xr+'\n%%EOF';
+ const u=new Uint8Array(o.length);for(let i=0;i<o.length;i++)u[i]=o.charCodeAt(i)&255;return new Blob([u],{type:'application/pdf'})}
+window.rcPDF=function(r,share){try{const st=BS.backupObj().settings||{},K=pdfKit(),W=226.77,m=12,iw=W-2*m,L=13,rows=[];
+ rows.push(['c',st.shopName||'Brother Shoes',13,1]);if(st.address)rows.push(['c',st.address,8,0]);if(st.phone)rows.push(['c','Tel: '+st.phone,8,0]);rows.push(['g'],['c',r.title,10,1],['p','No.',r.no],['p','Date',new Date(r.t||Date.now()).toLocaleString()]);
+ (r.lines||[]).forEach(x=>rows.push(['p',x[0],x[1]]));rows.push(['r'],['p',r.totalLabel||'Total','Rs '+Number(Math.abs(r.total)||0).toLocaleString('en-US'),1],['g'],['c','Thank you!',9,0]);
+ const Hh=rows.length*L+2*m;let y=Hh-m-8,s='0 g\n';
+ rows.forEach(w=>{if(w[0]==='c'){const t=K.fit(w[1],w[2],w[3],iw);s+=K.T(t,(W-K.tw(t,w[2],w[3]))/2,y,w[2],w[3])}
+  else if(w[0]==='p'){const sz=w[3]?11:9,b=w[3]?1:0,v=K.fit(w[2],sz,1,iw*.62),l=K.fit(w[1],sz,b,iw-K.tw(v,sz,1)-6);s+=K.T(l,m,y,sz,b)+K.T(v,W-m-K.tw(v,sz,1),y,sz,1)}
+  else if(w[0]==='r')s+='0.6 w '+m+' '+(y+L*.55).toFixed(2)+' m '+(W-m)+' '+(y+L*.55).toFixed(2)+' l S\n';y-=L});
+ return saveBlob(pdfBuild([s],W,Hh),'receipt-'+String(r.no).replace(/[^\w-]/g,'')+'.pdf',share,r.title)}catch(e){toast('Could not make the receipt PDF: '+((e&&e.message)||e),'err')}};
+
+/* ---------- stock manager: delete a size, add stock, dated history ---------- */
+let stkId=null;
+const seedH=a=>{if(!a.hist)a.hist=[{t:a.t||Date.now(),s:'',d:0,n:'Article created'+(a.sizes?' ('+a.sizes+')':'')}]};
+function stkSave(a){const q=ensureQ(a);a.sizes=Object.keys(q).sort((x,y)=>parseFloat(x)-parseFloat(y)).map(z=>z+':'+q[z]).join(', ');BS.cloud.add('articles',a);sv();stkDraw();render()}
+function stkOpen(id){let el=$('#stk');if(!el){el=document.createElement('div');el.id='stk';document.body.appendChild(el);
+  el.addEventListener('click',e=>{const t=e.target.closest('[data-k]');if(!t)return;const k=t.dataset.k,a=S.items.find(x=>x.id===stkId);if(k==='x'){el.classList.remove('on');return}if(!a)return;
+   if(k==='add')stkAdd(a,'');else if(k==='more')stkAdd(a,t.dataset.s);else if(k==='del')stkDel(a,t.dataset.s)})}
+ stkId=id;el.classList.add('on');stkDraw()}
+window.BS_stock=stkOpen;
+function stkDraw(){const el=$('#stk'),a=S.items.find(x=>x.id===stkId&&!x.deleted);if(!a){el.classList.remove('on');return}
+ const m=qmap(a),sz=sizeList(a),w=BS.can('write',true),h=(a.hist&&a.hist.length?a.hist:[{t:a.t,s:'',d:0,n:'Article created'+(a.sizes?' ('+a.sizes+')':'')}]).slice().sort((x,y)=>(y.t||0)-(x.t||0));
+ el.innerHTML=`<div class="w"><div class="rw" style="border:0"><b style="font-size:19px">Stock: ${esc2(a.no)}</b><button data-k="x">Close</button></div><small>${esc2(a.brand||'')} ${esc2(a.cat||'')}</small>`+(w?'<div style="margin:.6rem 0"><button class="p" data-k="add">+ Add stock</button></div>':'')+
+ (sz.length?sz.map(s=>`<div class="rw"><span><b>Size ${esc2(s)}</b> <small>${+m[s]||0} in stock</small></span>${w?`<span><button data-k="more" data-s="${esc2(s)}">+ Add</button> <button class="dg" data-k="del" data-s="${esc2(s)}">Delete</button></span>`:''}</div>`).join(''):'<p><small>No sizes in stock.</small></p>')+
+ '<h3>Stock history</h3>'+h.map(x=>`<div class="rw"><small>${new Date(x.t||0).toLocaleString([],{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</small><span>${x.s?`<b>${x.d>0?'+':''}${x.d}</b> size ${esc2(x.s)} `:''}<small>${esc2(x.n||'')}</small></span></div>`).join('')+'</div>'}
+function stkAdd(a,size){if(!BS.can('write'))return;
+ ask(size?'Add pairs to size '+esc2(size):'Add stock to '+esc2(a.no),size?[{l:'How many pairs',t:'number',v:'1'}]:[{l:'Sizes and quantity (example 38:2, 39:1)',t:'area'}],v=>{
+  const add=size?{[size]:Math.round(+v[0])}:parseSizes(v[0]),ks=Object.keys(add).filter(z=>add[z]>0);if(!ks.length)return toast('Enter a quantity like 38:2','err');
+  seedH(a);const q=ensureQ(a),now=Date.now();ks.forEach(z=>{q[z]=(+q[z]||0)+add[z]});a.hist.push(...ks.map(z=>({t:now,by:BS.uid(),s:z,d:add[z],n:'Added stock'})));stkSave(a);toast('Added '+ks.map(z=>z+':'+add[z]).join(', '))})}
+function stkDel(a,s){if(!BS.can('write'))return;const q=ensureQ(a),n=+q[s]||0;
+ BS.confirm('Delete size '+s+' of '+a.no+(n?' ('+n+' pair(s) in stock will be removed)':'')+'? A record stays in the stock history.',()=>{seedH(a);a.hist.push({t:Date.now(),by:BS.uid(),s,d:-n,n:'Size deleted'});delete q[s];stkSave(a);toast('Size '+s+' deleted')},'Delete')}
 
 /* ---------- ledger / today numbers, always derived from saved records ---------- */
 function custs(){const m={};S.credits.forEach(c=>{if(c.deleted)return;let n;if(c.kind==='udhaar')n=(c.customer||'').trim()||'Customer';else if(c.kind==='received'||c.kind==='adjust')n=(c.who||'').trim();if(!n)return;const o=m[n]||(m[n]={n,b:0,t:0});o.b+=(c.kind==='udhaar'?1:-1)*(+c.amt||0);o.t=Math.max(o.t,c.t||0)});return Object.values(m).filter(x=>x.b>0).sort((a,b)=>b.t-a.t)}
@@ -1130,7 +1176,7 @@ function onArticleScan(code){const c=String(code||'').trim();if(!c)return;const 
   ask(`Article ${a.no} is already in stock. Add more pairs`,[{l:'Sizes and quantity to add (example 38:2, 39:1)',t:'area',v:size?size+':1':''}],v=>{
    const add=parseSizes(v[0]),ks=Object.keys(add);if(!ks.length)return toast('Enter sizes like 38:2','err');if(!BS.can('write'))return;
    const m=ensureQ(a);ks.forEach(z=>{m[z]=(+m[z]||0)+add[z]});a.q=m;a.sizes=Object.keys(m).sort((x,y)=>parseFloat(x)-parseFloat(y)).map(z=>z+':'+m[z]).join(', ');
-   BS.cloud.add('articles',a);sv();toast(`Added ${ks.map(z=>z+':'+add[z]).join(', ')} to article ${a.no}.`);render()});return}
+   seedH(a);a.hist.push(...ks.map(z=>({t:Date.now(),by:BS.uid(),s:z,d:add[z],n:'Added stock (scan)'})));BS.cloud.add('articles',a);sv();toast(`Added ${ks.map(z=>z+':'+add[z]).join(', ')} to article ${a.no}.`);render()});return}
  ask('New barcode '+c,[{l:'Use this code as',o:['Article number','Linked barcode (I will type the article number)']}],v=>{
   if(v[0]==='Article number'){val.no=c;pend.bc=null;toast('Article number set to '+c)}
   else{pend.bc=c;toast('Barcode kept. Type the article number, fill the rest and tap Save.')}render()})}
