@@ -176,7 +176,7 @@ input[type=range]{width:100%;min-height:48px;accent-color:var(--acc)}
 .rcp .ty{text-align:center;margin:.7rem 0 0;color:#555}
 .rcb{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:.6rem}
 .rcb .bt{color:#fff;background:#26365a}.rcb .bt.p{background:linear-gradient(135deg,var(--acc),var(--acc2))}
-@media print{html,body{background:#fff!important;overflow:visible!important}body>*:not(#rc){display:none!important}#rc{position:static!important;background:#fff!important;padding:0!important;display:block!important}.rcw{zoom:1!important;width:100%}.rcb{display:none!important}}
+@media print{html,body{background:#fff!important;overflow:visible!important}body>*:not(#rc):not(#lbp){display:none!important}#rc{position:static!important;background:#fff!important;padding:0!important;display:block!important}.rcw{zoom:1!important;width:100%}.rcb{display:none!important}}
 
 #sSign.short:not(.s2) .stB,#sSign.short.s2 .stA{display:none}
 #sSign.short:not(.s2) #suBtn,#sSign:not(.short) #suNext,#sSign.short.s2 #suNext{display:none}
@@ -256,6 +256,31 @@ html,body{background:#06112a!important;color-scheme:dark}
 #scanbox .sf{position:absolute;left:50%;top:42%;width:72%;max-width:420px;aspect-ratio:1.6;transform:translate(-50%,-50%);border:3px solid #3df0bb;border-radius:18px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45),0 0 18px rgba(61,240,187,.6)}
 #scanbox p{position:relative;margin:0;color:#fff;font-size:15px;text-align:center;padding:0 20px}
 #scanbox button{position:relative;min-height:48px;padding:0 34px;border-radius:99px;border:1px solid rgba(255,255,255,.4);background:rgba(10,20,44,.75);color:#fff;font-size:16px}
+</style>
+<style id="bsx">#md form{overflow-y:auto!important}
+#md .phr{display:flex;gap:.5rem}.pvw{display:block;max-width:100%;max-height:150px;margin-top:.5rem;border-radius:.8rem}
+#bl,#lbp{position:fixed;inset:0;z-index:60;background:rgba(5,10,24,.96);color:var(--fg,#fff);display:none;overflow-y:auto;padding:.8rem}
+#bl.on,#lbp.on{display:block}
+.blp,.lbw{max-width:34rem;margin:0 auto}
+.blh,.lbhd{display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.6rem;font-size:1.2rem}
+#bl button,#lbp button,#bv button{min-height:44px;padding:0 1rem;border:0;border-radius:99px;font:inherit;color:#fff;background:#1a2a48}
+#bl button.p,#lbp button.p{background:linear-gradient(135deg,#2f7bff,#12c39a);font-weight:600}
+#bl input[type=search],#lbp input[type=search],#lbp select{width:100%;min-height:46px;margin:.4rem 0;border-radius:.9rem;border:1px solid #2f4a7a;background:#0a1226;color:#fff;font:inherit;padding:.4rem .7rem}
+.blc{margin:.6rem 0;padding:.8rem;border:1px solid #2f4a7a;border-radius:1rem;background:#0f1a33}
+.bl1{display:flex;justify-content:space-between;gap:.5rem}.bl1 small,.blm,.lbn0{color:#9fb4dc}.bl2{margin:.3rem 0}
+.blt{display:flex;gap:.5rem;overflow-x:auto;margin:.5rem 0}.blt img{height:84px;border-radius:.6rem;border:1px solid #2f4a7a;flex:none}
+.blb{width:100%}
+#bv{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.95);display:none;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;padding:.6rem}#bv.on{display:flex}
+#bv img{max-width:100%;max-height:82vh;object-fit:contain;touch-action:pinch-zoom}
+.lbtools{display:flex;gap:.5rem;margin:.3rem 0}.lbtools button{flex:1}
+#lbl{max-height:42vh;overflow-y:auto;margin:.4rem 0}
+.lbr{display:flex;align-items:center;gap:.7rem;padding:.55rem .2rem;border-top:1px solid #243558}.lbr input{width:22px;height:22px;flex:none}.lbr small{color:#9fb4dc}
+.lbmk{width:100%;margin-top:.5rem}
+#lbs{display:grid;grid-template-columns:repeat(auto-fill,var(--lw,50mm));gap:3mm;justify-content:center}
+.lb1{width:var(--lw,50mm);height:var(--lh,30mm);box-sizing:border-box;padding:1.2mm;background:#fff;color:#000;border:.2mm dashed #999;display:flex;flex-direction:column;justify-content:space-between;font-family:Arial,Helvetica,sans-serif;overflow:hidden;break-inside:avoid;page-break-inside:avoid}
+.lbt,.lbm{display:flex;justify-content:space-between;gap:1mm;line-height:1.1}.lbt b{font-size:3.4mm}.lbt span{font-size:2.6mm}.lbm span{font-size:3mm;font-weight:700}
+.lbc{flex:1;min-height:0;margin:.6mm 0}.lbc svg{width:100%;height:100%;display:block}.lbn{font-size:2.6mm;text-align:center;font-family:monospace}
+@media print{@page{margin:4mm}#lbp:not(.on){display:none!important}body.lbmode #rc{display:none!important}#lbp.on{position:static!important;display:block!important;overflow:visible!important;background:#fff!important;color:#000!important;padding:0!important}.lbhd,.lbctl{display:none!important}#lbs{justify-content:start}}
 </style>
 </head><body>
 <div id="boot"><img src="logo.png" alt="Brother Shoes"><p>BROTHER SHOES</p></div>
@@ -726,7 +751,7 @@ const SEC={
    :`<div class="rw"><span><b>${esc(x.u.name||nice(x.u.email))}</b><small>${esc(nice(x.u.email))} · ${x.u.active===false?'disabled':'active'}</small></span><span class="row" style="flex-wrap:nowrap">${x.u.uid===B.uid()?'<small>You</small>':`<select class="in2" style="width:auto;margin:0" data-act="role" data-u="${esc(x.u.uid)}" aria-label="Role">${['owner','staff','partner'].map(r=>`<option value="${r}" ${x.u.role===r?'selected':''}>${cap(r)}</option>`).join('')}</select><button type="button" class="bt s ${x.u.active===false?'p':'d'}" data-act="active" data-u="${esc(x.u.uid)}" data-v="${x.u.active===false?1:0}">${x.u.active===false?'Enable':'Disable'}</button>`}</span></div>`;
   return[...pack('Invite a person',[[3.5,`<p>They open the app, press Sign up, and use the same email or username.</p>`],[hi(),`<div><label for="iN">Name</label><input class="in2" id="iN" data-i="name" value="${esc(v.name)}"></div>`],[hi(),`<div><label for="iE">Email or username</label><input class="in2" id="iE" data-i="email" autocapitalize="none" value="${esc(v.email)}"></div>`],[hi(),`<div><label for="iR">Role</label><select class="in2" id="iR" data-i="role"><option value="staff" ${v.role==='staff'?'selected':''}>Staff</option><option value="partner" ${v.role==='partner'?'selected':''}>Partner (view-only)</option></select></div>`],[ht(),`<div class="row"><button type="button" class="bt p" data-act="invite" ${own?'':'disabled'}>Invite</button></div>`]]),
    ...listPages('People',items,row,'No other people yet.')]},
- drive(){if(!GOOGLE_CLIENT_ID)return pack('Google Drive backup',[[7,`<p><b>Drive is not set up yet.</b> Create a Google Client ID (steps are in your chat notes / README, part B), then tap the button below and paste it. The rest of the app works without it.</p>`],[ht(),`<div class="row"><button type="button" class="bt p" data-act="dSetId">Enter Google Client ID</button></div>`]]);
+ drive(){if(!GOOGLE_CLIENT_ID)return pack('Google Drive backup',[[7,`<p><b>Drive is not set up yet.</b> Create a Google Client ID (steps are in your chat notes / README, part B), then tap the button below and paste it. Open the app in <b>Chrome</b> (the website), not the installed APK, to use Drive. The rest of the app works without it.</p>`],[ht(),`<div class="row"><button type="button" class="bt p" data-act="dSetId">Enter Google Client ID</button></div>`]]);
   if(real!=='Owner')return pack('Google Drive backup',[[3,`<p>Only the owner can use Drive backup.</p>`]]);
   const own=!dev.lock&&!view,lb=+LS.get('bs_dlast','0'),conn=LS.get('bs_drive','')==='1',d=own?'':'disabled',b=(a,c,t)=>[ht(),`<div class="row"><button type="button" class="bt ${c}" data-act="${a}" ${d}>${t}</button></div>`];
   return pack('Google Drive backup',[[4,`<p>${conn?'Connected. ':'Not connected. '}Last backup: ${lb?fdt(lb):'never'}${LS.get('bs_dq','')==='1'?'<br><b>A backup is waiting. Tap Backup now.</b>':''}</p>`],[4,`<p>Automatic: daily at closing time and after big changes. The last 30 are kept in "Brother Shoes Backup".</p>`],b('dConnect','p','Connect Google Drive'),b('dNow','','Backup now'),b('dRestore','d','Restore from Drive')])},
@@ -795,9 +820,7 @@ const ACT={
 /* ---------- Google Drive backup ---------- */
 const drive=B.drive={tok:null,exp:0,client:null,timer:null,busy:false,
  async lib(){if(window.google&&google.accounts&&google.accounts.oauth2)return;await loadScript('https://accounts.google.com/gsi/client');if(!(window.google&&google.accounts&&google.accounts.oauth2))throw new Error('Google library not loaded')},
- async token(interactive){if(drive.tok&&Date.now()<drive.exp-60000)return drive.tok;
-  const C=window.Capacitor;if(C&&C.isNativePlatform&&C.isNativePlatform()){const P=C.Plugins&&C.Plugins.GDrive;if(!P)throw new Error('Google Drive plugin is missing in this APK. Build the latest version.');const r=await P.getToken({interactive:!!interactive});drive.tok=r.accessToken;drive.exp=Date.now()+55*60000;LS.set('bs_drive','1');return drive.tok}
-  await drive.lib();
+ async token(interactive){if(drive.tok&&Date.now()<drive.exp-60000)return drive.tok;await drive.lib();
   return new Promise((res,rej)=>{if(!drive.client)drive.client=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:'https://www.googleapis.com/auth/drive.file',callback:()=>{}});
    drive.client.callback=r=>{if(r.error)return rej(new Error(r.error));drive.tok=r.access_token;drive.exp=Date.now()+(+r.expires_in||3600)*1000;LS.set('bs_drive','1');res(drive.tok)};
    drive.client.error_callback=x=>{const t=(x&&x.type)||'popup_failed';rej(new Error(t==='popup_failed_to_open'?'the Google sign-in popup was blocked'+((window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform())?'. Google sign-in does not work inside the installed APK. Open the website in Chrome to use Drive backup':'. Tap Backup now'):t))};
@@ -907,10 +930,13 @@ let S={};try{S=JSON.parse(localStorage.getItem('bsd'))||{}}catch(e){}
 S.bal=S.bal||{};S.exp=S.exp||0;S.items=S.items||[];S.sales=S.sales||[];S.qty=S.qty||{};S.bill=S.bill||{paid:0,total:0};S.credits=S.credits||[];S.sup=S.sup||[];S.expl=S.expl||[];S.rets=S.rets||[];
 /* one-time clean-up of the old sample numbers (Aman/Zain/Man, Rs 5,000, Bill 1042, size counts); real records are kept */
 try{if(!localStorage.getItem('bs_demo_cleared')){S.bal={};S.qty={};S.bill={paid:0,total:0};S.exp=S.expl.reduce((t,x)=>t+(+x.amt||0),0);localStorage.setItem('bs_demo_cleared','1')}}catch(e){}
-const sv=()=>{try{localStorage.setItem('bsd',JSON.stringify(S))}catch(e){}},$=s=>document.querySelector(s),fmt=n=>'Rs '+Number(n||0).toLocaleString('en-US');
+const sv=()=>{try{localStorage.setItem('bsd',JSON.stringify(S,(k,v)=>(k==='img'||k==='imgs')?undefined:v))}catch(e){}},$=s=>document.querySelector(s),fmt=n=>'Rs '+Number(n||0).toLocaleString('en-US');
 const esc2=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let tt;function toast(m,k){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3400);try{BS.snd.auto(m,k)}catch(e){}}
-function ask(title,fs,ok){const f=$('#mf');f.innerHTML=`<h2>${title}</h2>`+fs.map((x,i)=>`<label for="q${i}">${x.l}</label>`+(x.o?`<select id="q${i}">${x.o.map(o=>`<option>${o}</option>`).join('')}</select>`:x.t=='area'?`<textarea id="q${i}" rows="3"></textarea>`:`<input id="q${i}" type="${x.t||'text'}" inputmode="${x.t=='number'?'decimal':'text'}" autocomplete="off">`)).join('')+`<div class="b"><button type="button" id="qc">Cancel</button><button class="p">OK</button></div>`;
+function ask(title,fs,ok){const f=$('#mf');
+ f.innerHTML=`<h2>${title}</h2>`+fs.map((x,i)=>`<label for="q${i}">${x.l}</label>`+(x.o?`<select id="q${i}">${x.o.map(o=>`<option>${o}</option>`).join('')}</select>`:x.t=='area'?`<textarea id="q${i}" rows="3">${esc2(x.v||'')}</textarea>`:x.t=='photo'?`<input id="q${i}" type="hidden"><div class="phr"><button type="button" data-pc="${i}">Take photo</button><button type="button" data-pg="${i}">Gallery</button></div><img id="pv${i}" class="pvw" alt="" hidden><input id="pc${i}" type="file" accept="image/*" capture="environment" hidden><input id="pg${i}" type="file" accept="image/*" hidden>`:`<input id="q${i}" type="${x.t||'text'}" inputmode="${x.t=='number'?'decimal':'text'}" autocomplete="off" value="${esc2(x.v||'')}" placeholder="${esc2(x.ph||'')}"${x.dl?` list="dl${i}"`:''}>`+(x.dl?`<datalist id="dl${i}">${x.dl.map(n=>`<option value="${esc2(n)}"></option>`).join('')}</datalist>`:''))).join('')+`<div class="b"><button type="button" id="qc">Cancel</button><button class="p">OK</button></div>`;
+ fs.forEach((x,i)=>{if(x.t!=='photo')return;const got=async e=>{const fl=e.target.files[0];e.target.value='';if(!fl)return;try{const d=await imgToData(fl,1100,'image/jpeg',.6);$('#q'+i).value=d;const pv=$('#pv'+i);pv.src=d;pv.hidden=false}catch(er){toast('Could not read the photo','err')}};
+  $('#pc'+i).onchange=got;$('#pg'+i).onchange=got;f.querySelector('[data-pc="'+i+'"]').onclick=()=>$('#pc'+i).click();f.querySelector('[data-pg="'+i+'"]').onclick=()=>$('#pg'+i).click()});
  $('#md').classList.add('on');$('#q0').focus();$('#qc').onclick=()=>$('#md').classList.remove('on');
  f.onsubmit=e=>{e.preventDefault();const v=fs.map((x,i)=>$('#q'+i).value);$('#md').classList.remove('on');ok(v)}}
 
@@ -932,7 +958,7 @@ function sell(){if(!BS.can('sell'))return;const a=art();if(!a)return toast('Sear
  const go2=n=>{ensureQ(a);bumpQ(a,s,-1);const rec={id:BS.id(),t:Date.now(),by:BS.uid(),a:a.no,aid:a.id,s,p:price,m:sel.pay,c:n||''};S.sales.push(rec);if(rec.m=='Credit')S.credits.push({id:rec.id,t:rec.t,kind:'udhaar',customer:rec.c,amt:rec.p,saleId:rec.id});BS.cloud.sale(rec,s);sv();BS.receipt({t:rec.t,no:'S-'+rec.id.slice(-6).toUpperCase(),title:'Sale receipt',lines:[['Article',a.no],['Size',''+s],['Payment',rec.m+(rec.c?' ('+rec.c+')':'')]],total:rec.p});toast(`Sold ${a.no} / size ${s} / ${fmt(rec.p)} (${sel.pay}${n?', '+n:''}). ${qtyOf(a,s)} left in size ${s}.`);render()};
  sel.pay=='Credit'?ask('Customer name',[{l:'Name'}],v=>v[0].trim()?go2(v[0].trim()):toast('Name required for credit')):go2()}
 function saveArt(){if(!BS.can('write'))return;if(!(val.no||'').trim())return toast('Enter the article number');
- {const rec={id:BS.id(),t:Date.now(),by:BS.uid(),no:val.no.trim(),brand:val.brand||'',type:sel.type,cat:sel.cat,color:val.color||'',buy:+val.buy||0,tag:+val.tag||0,min:+val.min||0,sizes:pend.sizes||'',q:parseSizes(pend.sizes),photo:pend.photoData||''};S.items.push(rec);BS.cloud.add('articles',rec)}sv();
+ {const rec={id:BS.id(),t:Date.now(),by:BS.uid(),no:val.no.trim(),brand:val.brand||'',type:sel.type,cat:sel.cat,color:val.color||'',buy:+val.buy||0,tag:+val.tag||0,min:+val.min||0,sizes:pend.sizes||'',q:parseSizes(pend.sizes),photo:pend.photoData||'',bc:pend.bc?[{c:pend.bc,s:''}]:[]};S.items.push(rec);BS.cloud.add('articles',rec)}sv();
  toast(`Saved article ${val.no} (${sel.type}, ${sel.cat}). ${S.items.length} saved.`);['no','brand','color','buy','tag','min'].forEach(k=>val[k]='');pend={};render()}
 function lastSale(){const done=new Set(S.rets.map(r=>r.saleId).filter(Boolean));return S.sales.filter(s=>!s.deleted&&!done.has(s.id)).sort((a,b)=>(b.t||0)-(a.t||0))[0]||null}
 function confirmRet(){if(!BS.can('write'))return;const ls=lastSale();if(!ls)return toast('No sale to return yet');
@@ -955,7 +981,9 @@ function confirmRet(){if(!BS.can('write'))return;const ls=lastSale();if(!ls)retu
 /* ---------- ledger / today numbers, always derived from saved records ---------- */
 function custs(){const m={};S.credits.forEach(c=>{if(c.deleted)return;let n;if(c.kind==='udhaar')n=(c.customer||'').trim()||'Customer';else if(c.kind==='received')n=(c.who||'').trim();if(!n)return;const o=m[n]||(m[n]={n,b:0,t:0});o.b+=(c.kind==='udhaar'?1:-1)*(+c.amt||0);o.t=Math.max(o.t,c.t||0)});return Object.values(m).filter(x=>x.b>0).sort((a,b)=>b.t-a.t)}
 function receive(n){ask('Receive from '+n,[{l:'Amount (Rs)',t:'number'}],v=>{const a=+v[0];if(!(a>0))return toast('Enter an amount');const c=custs().find(x=>x.n===n),old=c?c.b:0,take=Math.min(a,old);if(!(take>0))return toast('Nothing is owed by '+n);{const r={id:BS.id(),t:Date.now(),by:BS.uid(),kind:'received',who:n,amt:take};S.credits.push(r);BS.cloud.recv(r)}sv();toast(`Received ${fmt(take)} from ${n}. Balance ${fmt(old-take)}`);render()})}
-function bills(){const m={};S.sup.forEach(r=>{if(r.deleted)return;const k=String(r.bill||'').trim()||'-',b=m[k]||(m[k]={no:k,total:0,paid:0,t:0});if(r.type==='New bill')b.total+=+r.amt||0;else b.paid+=+r.amt||0;b.t=Math.max(b.t,r.t||0)});return Object.values(m).sort((a,b)=>b.t-a.t)}
+const billKey=r=>String(r.supplier||'').trim().toLowerCase()+'|'+(String(r.bill||'').trim()||'-');
+const billTitle=b=>(b.sup?b.sup+' \u00b7 ':'')+'Bill '+b.no;
+function bills(){const m={};S.sup.forEach(r=>{if(r.deleted)return;const k=billKey(r),no=String(r.bill||'').trim()||'-',b=m[k]||(m[k]={key:k,no,sup:'',total:0,paid:0,t:0,pics:0});if(r.supplier&&!b.sup)b.sup=String(r.supplier).trim();if(r.type==='New bill')b.total+=+r.amt||0;else b.paid+=+r.amt||0;b.t=Math.max(b.t,r.t||0);b.pics+=+r.np||0});return Object.values(m).sort((x,y)=>y.t-x.t)}
 function todayStats(){const d0=new Date();d0.setHours(0,0,0,0);const t0=d0.getTime(),refunded=new Set(S.rets.filter(r=>r.kind==='refund'&&r.saleId).map(r=>r.saleId));
  let tot=0,cash=0,cred=0,profit=0;const ss=S.sales.filter(s=>!s.deleted&&(s.t||0)>=t0&&!refunded.has(s.id));
  ss.forEach(s=>{const p=+s.p||0;tot+=p;if(s.m==='Credit')cred+=p;else cash+=p;const it=S.items.find(x=>x.id===s.aid)||S.items.find(x=>x.no===s.a);profit+=p-(it?+it.buy||0:0)});
@@ -967,7 +995,7 @@ function todayStats(){const d0=new Date();d0.setHours(0,0,0,0);const t0=d0.getTi
 /* ---------- Barcode / QR scanning (camera, works in the browser app; uses the native scanner too if the Android shell provides it) ---------- */
 const NP=()=>{const C=window.Capacitor;return(C&&C.Plugins)||{}};
 const nat=n=>{const C=window.Capacitor;return!!(C&&C.isNativePlatform&&C.isNativePlatform()&&NP()[n])};
-function onScanned(code){const c=String(code||'').trim();if(!c)return;const live=S.items.filter(x=>!x.deleted);let a=null,size=null;
+function onScanned(code){const c=String(code||'').trim();if(!c)return;if(scanCb){const cb=scanCb;scanCb=null;return cb(c)}const live=S.items.filter(x=>!x.deleted);let a=null,size=null;
  for(const x of live){const e=(x.bc||[]).find(b=>b.c===c);if(e){a=x;size=e.s||null;break}}
  if(!a){const mt=c.match(/^(.*)-(\d+(?:\.\d+)?)$/);if(mt){a=live.find(x=>x.no===mt[1]);if(a)size=mt[2]}}
  if(!a)a=live.find(x=>x.no===c)||live.find(x=>String(x.no).toLowerCase()===c.toLowerCase());
@@ -979,7 +1007,7 @@ function linkBarcode(a,code){const sizes=sizeList(a),ANY='Any size';
  ask(`Link barcode ${code} to article ${a.no}`,[{l:'Which size is this barcode for?',o:[ANY].concat(sizes)}],v=>{
   if(!BS.can('write'))return;ensureQ(a);a.bc=(a.bc||[]).filter(b=>b.c!==code).concat({c:code,s:v[0]===ANY?'':String(v[0])});BS.cloud.add('articles',a);sv();
   toast(`Linked. Scanning ${code} now selects ${a.no}${v[0]===ANY?'':' / size '+v[0]}.`);paint()})}
-let scanStop=null;
+let scanStop=null,scanCb=null;
 async function webScan(){
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!('BarcodeDetector' in window))return toast('Scanning is not supported in this browser. Use Chrome on Android.','err');
  if(scanStop)return;
@@ -991,9 +1019,88 @@ async function webScan(){
  let busy=false,timer=setInterval(async()=>{if(busy||v.readyState<2)return;busy=true;try{const r=await det.detect(v);if(r.length&&r[0].rawValue){const code=r[0].rawValue;stop();onScanned(code)}}catch(e){}busy=false},220);
  function stop(){clearInterval(timer);stream.getTracks().forEach(t=>t.stop());box.remove();scanStop=null}
  scanStop=stop;box.querySelector('button').onclick=stop}
-function scanBarcode(){
+function scanBarcode(cb){scanCb=typeof cb==='function'?cb:null;
  if(nat('BarcodeScan'))return NP().BarcodeScan.scan().then(r=>{if(r&&r.value)onScanned(r.value)}).catch(e=>toast('Scan failed: '+((e&&e.message)||e),'err'));
  webScan()}
+/* ---------- Supplier bills: photos kept on the record (phone cache + cloud) ---------- */
+const IMGDB=(()=>{let p=null;const open=()=>p||(p=new Promise((res,rej)=>{try{const q=indexedDB.open('bs_billimg',1);q.onupgradeneeded=()=>q.result.createObjectStore('i');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)}catch(e){rej(e)}}));
+ const tx=(m,f)=>open().then(d=>new Promise((res,rej)=>{const t=d.transaction('i',m),r=f(t.objectStore('i'));t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error)}));
+ return{put:(k,v)=>tx('readwrite',s=>s.put(v,k)).catch(()=>{}),get:k=>tx('readonly',s=>s.get(k)).catch(()=>null)}})();
+async function recPhotos(r){let c=null;if(!r.img&&!(r.imgs&&r.imgs.length))c=await IMGDB.get(r.id);else IMGDB.put(r.id,{img:r.img||'',imgs:r.imgs||[]});
+ const img=r.img||(c&&c.img)||'',imgs=(r.imgs&&r.imgs.length?r.imgs:(c&&c.imgs))||[];return[img].concat(imgs).filter(Boolean)}
+function openBills(){let el=$('#bl');
+ if(!el){el=document.createElement('div');el.id='bl';el.innerHTML='<div class="blp"><div class="blh"><b>Supplier bills</b><button type="button" data-a="x">Close</button></div><input id="bls" type="search" placeholder="Search supplier or bill number" autocomplete="off"><div id="bll"></div></div>';document.body.appendChild(el);
+  el.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a;if(a==='x')el.classList.remove('on');else if(a==='add')addBillPhoto(t.dataset.k);else if(a==='view')viewPhoto(t.dataset.id,+t.dataset.i)});
+  $('#bls').oninput=drawBills}
+ el.classList.add('on');drawBills()}
+async function drawBills(){const q=($('#bls').value||'').trim().toLowerCase(),list=bills().filter(b=>!q||(b.sup+' '+b.no).toLowerCase().includes(q)),box=$('#bll');
+ if(!list.length){box.innerHTML='<p class="blm">'+(q?'No bill matches your search.':'No supplier bills yet. Tap + on the Ledger screen to add one.')+'</p>';return}
+ const html=[];
+ for(const b of list){const th=[];for(const r of S.sup.filter(x=>!x.deleted&&billKey(x)===b.key)){const ph=await recPhotos(r);ph.forEach((d,i)=>th.push(`<img data-a="view" data-id="${esc2(r.id)}" data-i="${i}" src="${d}" alt="Bill photo">`))}
+  const rem=Math.max(0,b.total-b.paid);
+  html.push(`<div class="blc"><div class="bl1"><b>${esc2(billTitle(b))}</b><small>${esc2(new Date(b.t).toLocaleDateString())}</small></div><div class="bl2">${b.total?`${fmt(b.total)} bill, ${fmt(b.paid)} paid, <b>${fmt(rem)} remaining</b>`:`${fmt(b.paid)} paid`}</div><div class="blt">${th.join('')||'<span class="blm">No photo yet</span>'}</div><button type="button" class="blb" data-a="add" data-k="${esc2(b.key)}">Add bill photo</button></div>`)}
+ box.innerHTML=html.join('')}
+async function viewPhoto(id,i){const r=S.sup.find(x=>x.id===id);if(!r)return;const ph=await recPhotos(r);if(!ph[i])return;let v=$('#bv');
+ if(!v){v=document.createElement('div');v.id='bv';v.innerHTML='<img alt="Bill photo"><button type="button">Close</button>';document.body.appendChild(v);v.querySelector('button').onclick=()=>v.classList.remove('on');v.addEventListener('click',e=>{if(e.target===v)v.classList.remove('on')})}
+ v.querySelector('img').src=ph[i];v.classList.add('on')}
+function addBillPhoto(key){if(!BS.can('write'))return;
+ ask('Add photo to this bill',[{l:'Photo of the paper bill',t:'photo'}],v=>{if(!v[0])return toast('Take or choose a photo first','err');
+  (async()=>{const recs=S.sup.filter(x=>!x.deleted&&billKey(x)===key);if(!recs.length)return;
+   const info=[];for(const r of recs)info.push({r,ph:await recPhotos(r)});info.sort((x,y)=>x.ph.length-y.ph.length);
+   const{r,ph}=info[0];if(ph.length>=5)return toast('This bill already has 5 photos','err');
+   r.img=ph[0]||v[0];r.imgs=ph.slice(1).concat(ph.length?[v[0]]:[]);r.np=ph.length+1;
+   IMGDB.put(r.id,{img:r.img,imgs:r.imgs});BS.cloud.sup(r,0);sv();toast('Bill photo saved');drawBills()})()})}
+
+/* ---------- Add Article: scan a barcode to add or top-up stock ---------- */
+function findByCode(c){const live=S.items.filter(x=>!x.deleted);let a=null,size=null;
+ for(const x of live){const e=(x.bc||[]).find(b=>b.c===c);if(e){a=x;size=e.s||null;break}}
+ if(!a){const mt=c.match(/^(.*)-(\d+(?:\.\d+)?)$/);if(mt){a=live.find(x=>x.no===mt[1]);if(a)size=mt[2]}}
+ if(!a)a=live.find(x=>x.no===c)||live.find(x=>String(x.no).toLowerCase()===c.toLowerCase());
+ return a?{a,size}:null}
+function addStockScan(){if(!BS.can('write'))return;scanBarcode(onArticleScan)}
+function onArticleScan(code){const c=String(code||'').trim();if(!c)return;const f=findByCode(c);
+ if(f){const{a,size}=f;
+  ask(`Article ${a.no} is already in stock. Add more pairs`,[{l:'Sizes and quantity to add (example 38:2, 39:1)',t:'area',v:size?size+':1':''}],v=>{
+   const add=parseSizes(v[0]),ks=Object.keys(add);if(!ks.length)return toast('Enter sizes like 38:2','err');if(!BS.can('write'))return;
+   const m=ensureQ(a);ks.forEach(z=>{m[z]=(+m[z]||0)+add[z]});a.q=m;a.sizes=Object.keys(m).sort((x,y)=>parseFloat(x)-parseFloat(y)).map(z=>z+':'+m[z]).join(', ');
+   BS.cloud.add('articles',a);sv();toast(`Added ${ks.map(z=>z+':'+add[z]).join(', ')} to article ${a.no}.`);render()});return}
+ ask('New barcode '+c,[{l:'Use this code as',o:['Article number','Linked barcode (I will type the article number)']}],v=>{
+  if(v[0]==='Article number'){val.no=c;pend.bc=null;toast('Article number set to '+c)}
+  else{pend.bc=c;toast('Barcode kept. Type the article number, fill the rest and tap Save.')}render()})}
+
+/* ---------- Barcode labels (Code 128) for saved articles ---------- */
+const C128=['212222','222122','222221','121223','121322','131222','122213','122312','132212','221213','221312','231212','112232','122132','122231','113222','123122','123221','223211','221132','221231','213212','223112','312131','311222','321122','321221','312212','322112','322211','212123','212321','232121','111323','131123','131321','112313','132113','132311','211313','231113','231311','112133','112331','132131','113123','113321','133121','313121','211331','231131','213113','213311','213131','311123','311321','331121','312113','312311','332111','314111','221411','431111','111224','111422','121124','121421','141122','141221','112214','112412','122114','122411','142112','142211','241211','221114','413111','241112','134111','111242','121142','121241','114212','124112','124211','411212','421112','421211','212141','214121','412121','111143','111341','131141','114113','114311','411113','411311','113141','114131','311141','411131','211412','211214','211232','2331112'];
+function code128(text){const vals=[];for(const ch of String(text)){let c=ch.charCodeAt(0);if(c<32||c>126)c=63;vals.push(c-32)}
+ let sum=104;vals.forEach((v,i)=>sum+=v*(i+1));const seq=[104].concat(vals,[sum%103,106]);let x=10,r='';
+ seq.forEach(v=>{let bar=true;for(const w of C128[v]){const n=+w;if(bar)r+=`<rect x="${x}" y="0" width="${n}" height="60"/>`;x+=n;bar=!bar}});
+ return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${x+10} 60" preserveAspectRatio="none" shape-rendering="crispEdges"><g fill="#000">${r}</g></svg>`}
+const LBSZ={'Small 40 x 25 mm':[40,25],'Standard 50 x 30 mm':[50,30],'Large 60 x 40 mm':[60,40]};
+let lbSel=new Set();
+function labelHTML(a,size,code){return`<div class="lb1"><div class="lbt"><b>${esc2(a.brand||settings.shopName||'Brother Shoes')}</b><span>${esc2(a.cat||'')}${a.type?' \u00b7 '+esc2(a.type):''}</span></div><div class="lbm"><span>${esc2(a.no)}${a.color?' \u00b7 '+esc2(a.color):''}</span><span>${size?'Size '+esc2(size):''}</span></div><div class="lbc">${code128(code)}</div><div class="lbn">${esc2(code)}${a.tag?' \u00b7 '+fmt(a.tag):''}</div></div>`}
+function openLabels(){let el=$('#lbp');
+ if(!el){el=document.createElement('div');el.id='lbp';document.body.appendChild(el);
+  el.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a;
+   if(a==='x'){el.classList.remove('on');document.body.classList.remove('lbmode')}
+   else if(a==='all'){S.items.filter(x=>!x.deleted).forEach(x=>lbSel.add(x.id));drawLabelList()}
+   else if(a==='none'){lbSel.clear();drawLabelList()}
+   else if(a==='make')makeLabels();else if(a==='back')labelPicker();else if(a==='print')window.print()});
+  el.addEventListener('change',e=>{const c=e.target.closest('.lbr input');if(!c)return;if(c.checked)lbSel.add(c.dataset.id);else lbSel.delete(c.dataset.id)});
+  el.addEventListener('input',e=>{if(e.target.id==='lbf')drawLabelList()})}
+ const live=S.items.filter(x=>!x.deleted);lbSel=new Set(live.length?[live[live.length-1].id]:[]);
+ el.classList.add('on');document.body.classList.add('lbmode');labelPicker()}
+function labelPicker(){const el=$('#lbp');
+ el.innerHTML=`<div class="lbw"><div class="lbhd"><b>Barcode labels</b><button type="button" data-a="x">Close</button></div><p class="lbn0">Choose the articles. Each label carries a barcode that this app's scanner understands (article number and size).</p><label>Label size<select id="lbsz">${Object.keys(LBSZ).map((k,i)=>`<option${i==1?' selected':''}>${k}</option>`).join('')}</select></label><label>How many labels<select id="lbq"><option>One for every pair in stock</option><option>One for each size</option></select></label><input id="lbf" type="search" placeholder="Search article or brand" autocomplete="off"><div class="lbtools"><button type="button" data-a="all">Select all</button><button type="button" data-a="none">Clear</button></div><div id="lbl"></div><button type="button" class="p lbmk" data-a="make">Make labels</button></div>`;drawLabelList()}
+function drawLabelList(){const q=(($('#lbf')||{}).value||'').trim().toLowerCase(),live=S.items.filter(x=>!x.deleted&&(!q||(x.no+' '+(x.brand||'')+' '+(x.color||'')).toLowerCase().includes(q))).reverse(),box=$('#lbl');if(!box)return;
+ box.innerHTML=live.length?live.map(a=>{const m=qmap(a),n=Object.values(m).reduce((t,v)=>t+(+v||0),0);return`<label class="lbr"><input type="checkbox" data-id="${esc2(a.id)}"${lbSel.has(a.id)?' checked':''}><span><b>${esc2(a.no)}</b> ${esc2(a.brand||'')} <small>${esc2(a.cat||'')}${a.color?', '+esc2(a.color):''} \u00b7 ${n} pairs</small></span></label>`}).join(''):'<p class="lbn0">No articles found. Save an article first.</p>'}
+function makeLabels(){const arts=S.items.filter(x=>!x.deleted&&lbSel.has(x.id));if(!arts.length)return toast('Select at least one article','err');
+ const sz=LBSZ[$('#lbsz').value]||[50,30],perPair=$('#lbq').selectedIndex===0,out=[];
+ arts.forEach(a=>{const m=qmap(a),sizes=Object.keys(m).sort((x,y)=>parseFloat(x)-parseFloat(y));
+  if(!sizes.length){out.push(labelHTML(a,'',String(a.no)));return}
+  sizes.forEach(z=>{const n=perPair?Math.max(0,+m[z]||0):1;for(let i=0;i<n;i++)out.push(labelHTML(a,z,a.no+'-'+z))})});
+ if(!out.length)return toast('These articles have no pairs in stock to label','err');
+ if(out.length>300)return toast('That is '+out.length+' labels. Select fewer articles (300 at a time).','err');
+ const el=$('#lbp');el.style.setProperty('--lw',sz[0]+'mm');el.style.setProperty('--lh',sz[1]+'mm');
+ el.innerHTML=`<div class="lbw"><div class="lbhd"><b>${out.length} labels</b><span><button type="button" data-a="back">Back</button><button type="button" class="p" data-a="print">Print / Save PDF</button></span></div><p class="lbn0 lbctl">Scanning a printed label opens that article and size.</p><div id="lbs">${out.join('')}</div></div>`}
 
 const szh=(i,x1,x2)=>({l:'Size '+(i+1),b:[x1,1492,x2,1636],g:'size',vf:()=>chipLabels()[i]||('#'+i),f:()=>{const lab=chipLabels()[i],a=art();if(!a){sel.size=null;return toast('Search and select an article first')}if(!lab){sel.size=null;return}if(!qtyOf(a,lab)){sel.size=null;toast('Size '+lab+' is out of stock')}}});
 const SC=[
@@ -1003,7 +1110,7 @@ const SC=[
  {l:'Switch cash or credit',b:[945,1735,1095,1815],f:()=>{sel.pay=sel.pay=='Cash'?'Credit':'Cash';ring();toast('Payment: '+sel.pay)}},
  {l:'Edit final price',b:[355,1905,690,1985],f:()=>ask('Final price',[{l:'Rs',t:'number'}],v=>{if(+v[0]>0){price=+v[0];toast('Final price set to '+fmt(price));paint()}})},
  {l:'Sell',b:[790,1880,1095,2000],f:sell}],
-[{l:'Article number',w:1,b:[335,712,1102,793],in:'no',ph:'e.g., 12345'},{l:'Brand',w:1,b:[335,881,702,962],in:'brand',ph:'e.g., Nike'},
+[{l:'Article number',w:1,b:[335,712,975,793],in:'no',ph:'e.g., 12345'},{l:'Scan barcode to add stock',w:1,b:[985,712,1102,793],f:addStockScan},{l:'Print barcode labels',w:1,b:[908,498,1128,568],f:openLabels},{l:'Brand',w:1,b:[335,881,702,962],in:'brand',ph:'e.g., Nike'},
  {l:'Local',b:[735,880,915,962],g:'type',v:'Local'},{l:'Branded',b:[920,880,1102,962],g:'type',v:'Branded'},
  {l:'Ladies',b:[333,1060,577,1142],g:'cat',v:'Ladies'},{l:'Boys',b:[598,1060,840,1142],g:'cat',v:'Boys'},{l:'Girls',b:[862,1060,1104,1142],g:'cat',v:'Girls'},
  {l:'Color',w:1,b:[335,1303,702,1374],in:'color',ph:'e.g., Black'},{l:'Buying price',w:1,bp:1,b:[735,1303,1103,1374],in:'buy',n:1,ph:'Rs 0'},{l:'Tag price',w:1,b:[335,1453,702,1524],in:'tag',n:1,ph:'Rs 0'},{l:'Minimum price',w:1,b:[735,1453,1103,1524],in:'min',n:1,ph:'Rs 0'},
@@ -1011,9 +1118,14 @@ const SC=[
  {l:'Upload photo',w:1,b:[865,1595,1132,1850],f:()=>$('#file').click()},{l:'Save',w:1,b:[503,1963,935,2083],f:saveArt}],
 [{l:'Add expense',w:1,b:[372,1920,1067,2025],f:()=>ask('Add expense',[{l:'What for'},{l:'Amount (Rs)',t:'number'}],v=>{const a=+v[1];if(!(a>0))return toast('Enter an amount');S.exp+=a;{const r={id:BS.id(),t:Date.now(),by:BS.uid(),what:v[0]||'',amt:a};S.expl.push(r);BS.cloud.expense(r)}sv();const T=todayStats();toast(`Expense added: ${v[0]||'-'} ${fmt(a)}. Expenses today ${fmt(T.exp)}, net profit ${fmt(T.net)}`);render()})},
  {l:'Net profit',p:1,b:[345,1225,1092,1398],f:()=>{const T=todayStats();toast(`Net profit ${fmt(T.net)} (profit ${fmt(T.profit)} minus expenses ${fmt(T.exp)})`)}}],
-[{l:'Bill details',b:[352,1480,1085,1773],f:()=>{const b=bills()[0];toast(b?(b.total?`Bill ${b.no}: ${fmt(b.total)} minus ${fmt(b.paid)} paid = ${fmt(Math.max(0,b.total-b.paid))} remaining`:`Bill ${b.no}: ${fmt(b.paid)} paid`):'No supplier bills yet')}},
+[{l:'Bill details',b:[352,1480,1085,1773],f:openBills},
  {l:'Payment history: open Return / Exchange',b:[345,1810,740,1880],f:()=>go(4)},
- {l:'Add bill or payment',w:1,b:[983,1920,1133,2070],f:()=>ask('Supplier bill or payment',[{l:'Type',o:['Payment made','New bill']},{l:'Bill number'},{l:'Amount (Rs)',t:'number'},{l:'Paid to / note'}],v=>{const a=+v[2];if(!(a>0))return toast('Enter an amount');{const r={id:BS.id(),t:Date.now(),by:BS.uid(),type:v[0],bill:v[1].trim(),amt:a,note:v[3]||''};S.sup.push(r);BS.cloud.sup(r,0)}sv();const b=bills().find(x=>x.no===(v[1].trim()||'-'));toast(`${v[0]} ${fmt(a)} on bill ${v[1]||'-'}${v[3]?' ('+v[3]+')':''}.${b&&b.total?' Remaining '+fmt(Math.max(0,b.total-b.paid)):''}`);render()})}],
+ {l:'Add bill or payment',w:1,b:[983,1920,1133,2070],f:()=>{const names=[...new Set(S.sup.filter(r=>!r.deleted&&r.supplier).map(r=>String(r.supplier).trim()))];
+  ask('Supplier bill or payment',[{l:'Type',o:['Payment made','New bill']},{l:'Supplier name',dl:names,ph:'e.g., Ali Traders'},{l:'Bill number'},{l:'Amount (Rs)',t:'number'},{l:'Paid to / note'},{l:'Photo of the paper bill (optional)',t:'photo'}],v=>{const a=+v[3];if(!(a>0))return toast('Enter an amount');
+   const r={id:BS.id(),t:Date.now(),by:BS.uid(),type:v[0],supplier:v[1].trim(),bill:v[2].trim(),amt:a,note:v[4]||''};
+   if(v[5]){r.img=v[5];r.np=1;IMGDB.put(r.id,{img:v[5],imgs:[]})}
+   S.sup.push(r);BS.cloud.sup(r,0);sv();const k=billKey(r),b=bills().find(x=>x.key===k);
+   toast(`${v[0]} ${fmt(a)} on ${r.supplier?r.supplier+' / ':''}bill ${r.bill||'-'}${v[4]?' ('+v[4]+')':''}.${b&&b.total?' Remaining '+fmt(Math.max(0,b.total-b.paid)):''}${r.img?' Bill photo saved.':''}`);render()})}}],
 [{l:'Same article, other size',b:[330,1043,593,1373],g:'ex',v:'Same'},{l:'Different article',b:[622,1043,874,1373],g:'ex',v:'Different'},{l:'Cash refund',b:[903,1043,1153,1373],g:'ex',v:'Cash'},
  {l:'New size',w:1,b:[810,1448,1088,1530],in:'ns',ph:'e.g., 40'},{l:'New article number',w:1,b:[810,1596,1088,1676],in:'na',ph:'e.g., 12345'},{l:'New price',w:1,b:[810,1742,1088,1822],in:'np',n:1,ph:'Rs 0'},{l:'Confirm',w:1,b:[330,1897,1108,2030],f:confirmRet}],
 [{l:'Owner',b:[320,765,498,836],g:'role',v:'Owner',f:()=>BS.setView('Owner')},{l:'Staff',b:[523,765,670,836],g:'role',v:'Staff',f:()=>BS.setView('Staff')},{l:'Partner view-only',b:[693,765,1105,836],g:'role',v:'Partner',f:()=>BS.setView('Partner')},
@@ -1042,7 +1154,10 @@ function paint0(){const a=art(),labs=chipLabels();
  CX.forEach((cx,i)=>{const lab=labs[i];if(!lab)return;const q=a?qtyOf(a,lab):0,out=a&&q<=0;ov([cx-66,1156,cx+66,1292],`<span class="sz" style="font-size:${F(54)}">${esc2(lab)}</span><span class="bd" style="font-size:${F(28)}">${q}</span>`,{flexDirection:'column',alignItems:'center',justifyContent:'center',gap:F(10),borderRadius:F(40)},'szc'+(out?' out':''))});
  if(sizeList(a).length>5){const e=ov([560,1068,862,1128],'<button type="button" class="pa more">More sizes ›</button>',{justifyContent:'flex-end',alignItems:'center'});e.querySelector('button').style.fontSize=F(28);e.querySelector('button').onclick=()=>{szPage++;sel.size=null;render()}}
  ov([76,1562,446,1668],`<span style="font-size:${F(78)}">${fmt(price)}</span>`,{alignItems:'center'},'price')}
-function paint1(){const toks=String(pend.sizes||'').split(/[\s,;]+/).filter(Boolean);
+function paint1(){const SI='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:'+F(56)+';height:'+F(56)+'">'+(pend.bc?'<path d="M5 12l5 5 9-10"/>':'<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 8v8M11 8v8M14 8v8M17 8v8"/>')+'</svg>';
+ ov([717,450,834,531],SI,{alignItems:'center',justifyContent:'center',borderRadius:F(22),color:'#fff',background:pend.bc?'linear-gradient(135deg,#12c39a,#2f7bff)':'linear-gradient(135deg,#2f7bff,#12c39a)'});
+ ov([640,236,862,306],'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:'+F(40)+';height:'+F(40)+'"><path d="M5 5v14M8 5v14M12 5v14M15 5v14M19 5v14"/></svg><span style="font-size:'+F(36)+';font-weight:600">Labels</span>',{alignItems:'center',justifyContent:'center',gap:F(12),borderRadius:F(36),color:'#fff',background:'rgba(47,123,255,.35)',border:'1px solid rgba(120,170,255,.7)'});
+ const toks=String(pend.sizes||'').split(/[\s,;]+/).filter(Boolean);
  if(!toks.length)ov([60,1424,525,1524],`<span class="hint" style="font-size:${F(30)}">Tap to add sizes<br>e.g. 36:2, 37:3, 38:1</span>`,{alignItems:'center',justifyContent:'center',textAlign:'center'});
  else ov([65,1433,517,1516],toks.slice(0,3).map(t=>`<span class="sc" style="font-size:${F(34)}">${esc2(t)}</span>`).join('')+(toks.length>3?`<span class="sc" style="font-size:${F(34)}">+${toks.length-3}</span>`:''),{alignItems:'center',gap:F(18)});
  ov([604,1340,858,1584],pend.photoData?`<img class="ph" src="${pend.photoData}" alt="">`:CAM,{alignItems:'center',justifyContent:'center',borderRadius:F(22),overflow:'hidden'},pend.photoData?'':'dim cam')}
@@ -1054,9 +1169,10 @@ function paint3(){const cs=custs();
  const e=ov([70,488,830,905],cs.length?cs.map(c=>`<div class="cr"><span class="cn"><b style="font-size:${F(46)}">${esc2(c.n)}</b><small style="font-size:${F(36)}">${fmt(c.b)}</small></span><button type="button" class="pa rcv" data-n="${esc2(c.n)}" style="font-size:${F(34)}">Receive</button></div>`).join(''):`<span class="hint" style="font-size:${F(32)}">No customers yet<br>Credit sales will appear here</span>`,cs.length?{flexDirection:'column',overflowY:'auto'}:{alignItems:'center',justifyContent:'center',textAlign:'center'},cs.length?'list':'');
  e.querySelectorAll('.rcv').forEach(b=>b.onclick=()=>{if(BS.can('write'))receive(b.dataset.n)});
  const b=bills()[0];
- ov([98,1163,800,1422],b?(b.total?`<div class="bt1" style="font-size:${F(48)}">Bill ${esc2(b.no)}</div><div class="bt2" style="font-size:${F(36)}">${fmt(b.total)} – ${fmt(b.paid)} = ${fmt(Math.max(0,b.total-b.paid))} remaining</div><div class="bar"><i style="width:${Math.min(100,Math.round(b.paid/b.total*100))}%"></i><em style="font-size:${F(32)}">${Math.min(100,Math.round(b.paid/b.total*100))}%</em></div>`:`<div class="bt1" style="font-size:${F(48)}">Bill ${esc2(b.no)}</div><div class="bt2" style="font-size:${F(36)}">${fmt(b.paid)} paid</div>`):`<span class="hint" style="font-size:${F(32)}">No supplier bills yet<br>Tap + to add a bill or payment</span>`,b?{flexDirection:'column',justifyContent:'center',gap:F(16)}:{alignItems:'center',justifyContent:'center',textAlign:'center'},'bill');
+ ov([98,1163,800,1422],b?(b.total?`<div class="bt1" style="font-size:${F(48)}">${esc2(billTitle(b))}</div><div class="bt2" style="font-size:${F(36)}">${fmt(b.total)} – ${fmt(b.paid)} = ${fmt(Math.max(0,b.total-b.paid))} remaining</div><div class="bar"><i style="width:${Math.min(100,Math.round(b.paid/b.total*100))}%"></i><em style="font-size:${F(32)}">${Math.min(100,Math.round(b.paid/b.total*100))}%</em></div>`:`<div class="bt1" style="font-size:${F(48)}">${esc2(billTitle(b))}</div><div class="bt2" style="font-size:${F(36)}">${fmt(b.paid)} paid</div>`):`<span class="hint" style="font-size:${F(32)}">No supplier bills yet<br>Tap + to add a bill or payment</span>`,b?{flexDirection:'column',justifyContent:'center',gap:F(16)}:{alignItems:'center',justifyContent:'center',textAlign:'center'},'bill');
+ if(b&&b.pics)ov([640,1172,792,1236],`<svg viewBox="0 0 48 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:${F(44)};height:${F(36)}"><rect x="4" y="9" width="40" height="27" rx="6"/><path d="M16 9l3-5h10l3 5"/><circle cx="24" cy="22" r="7"/></svg><b style="font-size:${F(38)}">${b.pics}</b>`,{alignItems:'center',justifyContent:'flex-end',gap:F(10)});
  const p=S.sup.filter(r=>!r.deleted&&r.type!=='New bill').sort((x,y)=>(y.t||0)-(x.t||0))[0];
- ov([74,1566,700,1670],p?`<span class="hd" style="font-size:${F(34)}">${new Date(p.t||Date.now()).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</span><i class="dot"></i><span class="hx" style="font-size:${F(34)}">Paid${p.note?' to '+esc2(p.note):''}${p.bill?' (bill '+esc2(p.bill)+')':''} - ${fmt(p.amt)}</span>`:`<span class="hint" style="font-size:${F(32)}">No payments yet</span>`,{alignItems:'center',gap:F(18)})}
+ ov([74,1566,700,1670],p?`<span class="hd" style="font-size:${F(34)}">${new Date(p.t||Date.now()).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</span><i class="dot"></i><span class="hx" style="font-size:${F(34)}">${p.supplier?esc2(p.supplier)+': ':''}Paid${p.note?' to '+esc2(p.note):''}${p.bill?' (bill '+esc2(p.bill)+')':''} - ${fmt(p.amt)}</span>`:`<span class="hint" style="font-size:${F(32)}">No payments yet</span>`,{alignItems:'center',gap:F(18)})}
 function paint4(){const s=lastSale();
  ov([95,438,800,502],s?`<span style="font-size:${F(54)}"><b>${esc2(s.a)}</b> / <b class="bl">size ${esc2(s.s)}</b> / <b class="bl">${fmt(s.p)}</b></span>`:`<span class="hint" style="font-size:${F(40)}">No sale to return yet</span>`,{alignItems:'center'},'orig')}
 function paint(){const st=$('#st');if(!st)return;st.querySelectorAll('.ov').forEach(e=>e.remove());const P=[paint0,paint1,paint2,paint3,paint4][cur];if(P)P()}
