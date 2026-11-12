@@ -281,6 +281,7 @@ html,body{background:#06112a!important;color-scheme:dark}
 .lbt,.lbm{display:flex;justify-content:space-between;gap:1mm;line-height:1.1}.lbt b{font-size:3.4mm}.lbt span{font-size:2.6mm}.lbm span{font-size:3mm;font-weight:700}
 .lbc{flex:1;min-height:0;margin:.6mm 0}.lbc svg{width:100%;height:100%;display:block}.lbn{font-size:2.6mm;text-align:center;font-family:monospace}
 @media print{@page{margin:4mm}#lbp:not(.on){display:none!important}body.lbmode #rc{display:none!important}#lbp.on{position:static!important;display:block!important;overflow:visible!important;background:#fff!important;color:#000!important;padding:0!important}.lbhd,.lbctl{display:none!important}#lbs{justify-content:start}}
+#sa button.dg{background:#6a2433}#sa button.x{min-height:32px;padding:0 10px;margin-left:.4rem}
 </style>
 </head><body>
 <div id="boot"><img src="logo.png" alt="Brother Shoes"><p>BROTHER SHOES</p></div>
@@ -391,7 +392,7 @@ const GOOGLE_CLIENT_ID = (function(){var v="";try{v=localStorage.getItem("bs_gci
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const B=window.BS={deleted:{articles:[],expenses:[]}};
+const B=window.BS={deleted:{articles:[],expenses:[],supplierPayments:[]}};
 const NEED=!(typeof firebaseConfig==='object'&&firebaseConfig&&firebaseConfig.apiKey&&firebaseConfig.projectId&&!/PASTE|YOUR_/i.test(firebaseConfig.apiKey+firebaseConfig.projectId));
 const FB_CDN='https://www.gstatic.com/firebasejs/10.12.2/';
 const FAKE='@brothershoes.app';
@@ -489,7 +490,7 @@ const cloud=B.cloud={
  expense(r){return cloud.commit(b=>{b.set(doc('expenses',r.id),clean(r));b.set(doc('state','main'),{exp:inc(r.amt)},{merge:true})})},
  recv(r){return cloud.commit(b=>{b.set(doc('credits',r.id),clean(r));b.set(doc('state','main'),{bal:{[r.who]:inc(-r.amt)}},{merge:true})})},
  sup(r,paid){return cloud.commit(b=>{b.set(doc('supplierPayments',r.id),clean(r));if(paid)b.set(doc('state','main'),{bill:{paid:inc(paid)}},{merge:true})})},
- ret(r,adj){return cloud.commit(b=>{b.set(doc('returns',r.id),clean(r));adj.forEach(([s,d])=>{if(r.aid)b.set(doc('articles',r.aid),{q:{[s]:inc(d)}},{merge:true})})})},
+ ret(r,adj){return cloud.commit(b=>{b.set(doc('returns',r.id),clean(r));adj.forEach(([s,d,a])=>{const id=a||r.aid;if(id)b.set(doc('articles',id),{q:{[s]:inc(d)}},{merge:true})})})},
  soft(col,id,flag,extra){return cloud.commit(b=>{b.set(doc(col,id),{deleted:flag,[flag?'deletedAt':'restoredAt']:Date.now(),[flag?'deletedBy':'restoredBy']:B.uid()},{merge:true});if(extra)extra(b)})},
  async restoreAll(d){
   const fix=r=>{const x=clean(r);x.id=x.id||B.id();x.t=x.t||Date.now();return x};
@@ -759,7 +760,7 @@ const SEC={
   return listPages('Saved articles',S.items.slice().reverse(),r=>`<div class="rw"><span>${r.photo?`<img class="pv" style="width:2rem;height:2rem;border-radius:.5rem;vertical-align:middle;margin-right:.4rem" src="${esc(r.photo)}" alt="">`:''}<b>${esc(r.no)}</b> · ${esc(r.brand||'-')}<small>${esc(r.type)} · ${esc(r.cat)} · tag ${fmt(r.tag||0)}${B.can('buy',true)?' · buy '+fmt(r.buy||0):''}</small></span>${w?`<button type="button" class="bt d s" data-act="delArt" data-id="${esc(r.id)}">Remove</button>`:''}</div>`,'No articles saved yet. Use the Add Article screen.')},
  expenses(){const w=B.can('write',true);
   return listPages('Expenses added',S.expl.slice().reverse(),r=>`<div class="rw"><span>${esc(r.what||'-')}<small>${fdt(r.t)}</small></span><span class="row" style="flex-wrap:nowrap"><b>${fmt(r.amt)}</b>${w?`<button type="button" class="bt d s" data-act="delExp" data-id="${esc(r.id)}">Remove</button>`:''}</span></div>`,'No expenses added yet.')},
- removed(){const own=!dev.lock&&!view;const dl=[...(B.deleted.articles||[]).map(r=>['articles',r,'Article '+r.no+' · '+(r.brand||'')]),...(B.deleted.expenses||[]).map(r=>['expenses',r,'Expense '+(r.what||'-')+' · '+fmt(r.amt)])];
+ removed(){const own=!dev.lock&&!view;const dl=[...(B.deleted.articles||[]).map(r=>['articles',r,'Article '+r.no+' · '+(r.brand||'')]),...(B.deleted.expenses||[]).map(r=>['expenses',r,'Expense '+(r.what||'-')+' · '+fmt(r.amt)]),...(B.deleted.supplierPayments||[]).map(r=>['supplierPayments',r,'Supplier '+(r.supplier||'-')+' · '+(r.type==='New bill'?'Bill '+(r.bill||'')+' '+fmt(r.amt):r.type==='Proof'?'Photo':'Paid '+fmt(r.amt))])];
   return listPages('Recently removed',dl,([c,r,t])=>`<div class="rw"><span>${esc(t)}<small>${r.deletedAt?fdt(r.deletedAt):''}</small></span><button type="button" class="bt s" data-act="restore" data-c="${c}" data-id="${esc(r.id)}" ${own?'':'disabled'}>Restore</button></div>`,'Nothing removed. Nothing is ever deleted for good: removing only hides a record.')}
 };
 function shRender(goto){const sh=$('#sheet');if(sh.hidden)return;
@@ -802,7 +803,7 @@ const ACT={
   confirmBox('Remove this expense ('+fmt(r.amt)+')? It is only hidden and can be restored from Settings.',()=>{S.expl=S.expl.filter(x=>x.id!==r.id);B.deleted.expenses.push(Object.assign({},r,{deletedAt:Date.now()}));S.exp-=r.amt;sv();cloud.soft('expenses',r.id,true,b=>b.set(doc('state','main'),{exp:inc(-r.amt)},{merge:true}));shRender();toast('Expense removed (can be restored in Settings)')},'Remove')},
  restore(el){if(!B.can('owner'))return;const c=el.dataset.c,id=el.dataset.id,list=B.deleted[c],r=list.find(x=>x.id===id);if(!r)return;
   B.deleted[c]=list.filter(x=>x.id!==id);
-  if(c==='articles')S.items.push(Object.assign({},r,{deleted:false}));else{S.expl.push(Object.assign({},r,{deleted:false}));S.exp+=r.amt}
+  if(c==='articles')S.items.push(Object.assign({},r,{deleted:false}));else if(c==='supplierPayments')S.sup.push(Object.assign({},r,{deleted:false}));else{S.expl.push(Object.assign({},r,{deleted:false}));S.exp+=r.amt}
   sv();cloud.soft(c,id,false,c==='expenses'?b=>b.set(doc('state','main'),{exp:inc(r.amt)},{merge:true}):null);shRender();toast('Restored')},
  dSetId(){if(!B.can('owner'))return;ask('Google Client ID',[{l:'Paste the Client ID (ends with .apps.googleusercontent.com)'}],v=>{const c=String(v[0]||'').trim();if(!/^[\w.-]+\.apps\.googleusercontent\.com$/.test(c))return toast('That does not look like a Google Client ID','err');LS.set('bs_gcid',c);toast('Saved. Reloading...');setTimeout(()=>location.reload(),900)})},dConnect(){drive.connect()},dNow(){drive.backup(true)},dRestore(){drive.restore()}
 };
@@ -960,36 +961,102 @@ function sell(){if(!BS.can('sell'))return;const a=art();if(!a)return toast('Sear
 function saveArt(){if(!BS.can('write'))return;if(!(val.no||'').trim())return toast('Enter the article number');
  {const rec={id:BS.id(),t:Date.now(),by:BS.uid(),no:val.no.trim(),brand:val.brand||'',type:sel.type,cat:sel.cat,color:val.color||'',buy:+val.buy||0,tag:+val.tag||0,min:+val.min||0,sizes:pend.sizes||'',q:parseSizes(pend.sizes),photo:pend.photoData||'',bc:pend.bc?[{c:pend.bc,s:''}]:[]};S.items.push(rec);BS.cloud.add('articles',rec)}sv();
  toast(`Saved article ${val.no} (${sel.type}, ${sel.cat}). ${S.items.length} saved.`);['no','brand','color','buy','tag','min'].forEach(k=>val[k]='');pend={};render()}
-function lastSale(){const done=new Set(S.rets.map(r=>r.saleId).filter(Boolean));return S.sales.filter(s=>!s.deleted&&!done.has(s.id)).sort((a,b)=>(b.t||0)-(a.t||0))[0]||null}
+let retSale=null,LBI=[],LBS=[50,30];
+function openSales(){const done=new Set(S.rets.map(r=>r.saleId).filter(Boolean));return S.sales.filter(s=>!s.deleted&&!done.has(s.id)).sort((a,b)=>(b.t||0)-(a.t||0))}
+function lastSale(){const l=openSales();return(retSale&&l.find(s=>s.id===retSale))||l[0]||null}
+function pickSale(){const l=openSales().slice(0,30);if(!l.length)return toast('No sale to return yet');
+ const lab=s=>new Date(s.t).toLocaleString([],{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})+' \u00b7 '+s.a+' / size '+s.s+' / '+fmt(s.p)+(s.c?' \u00b7 '+s.c:'');
+ ask('Which sale is being returned?',[{l:'Recent sales (newest first)',o:l.map(lab)}],v=>{const s=l.find(x=>lab(x)===v[0]);if(s){retSale=s.id;toast('Selected: '+lab(s));render()}})}
 function confirmRet(){if(!BS.can('write'))return;const ls=lastSale();if(!ls)return toast('No sale to return yet');
- const it=ls.aid?S.items.find(x=>x.id===ls.aid):null;
- const base=o=>Object.assign({id:BS.id(),t:Date.now(),by:BS.uid(),saleId:ls.id,aid:ls.aid||'',article:ls.a,oldSize:ls.s},o);
- const adjq=adj=>{if(!it)return[];ensureQ(it);const out=[];adj.forEach(([s,d])=>{if(bumpQ(it,''+s,d))out.push([''+s,d])});return out};
- const fin=(r,adj,rc)=>{S.rets.push(r);BS.cloud.ret(r,adjq(adj));sv();BS.receipt(rc);render()};
+ const it=ls.aid?S.items.find(x=>x.id===ls.aid):null,ob=it?+it.buy||0:0,cr=ls.m==='Credit',who=(ls.c||'').trim()||'Customer';
+ const base=o=>Object.assign({id:BS.id(),t:Date.now(),by:BS.uid(),saleId:ls.id,aid:ls.aid||'',article:ls.a,oldSize:ls.s,v:2,cash:0,cr:0,td:0,pd:0,restock:true},o);
+ const bump=(a,s,d,adj)=>{if(!a)return;ensureQ(a);if(bumpQ(a,''+s,d))adj.push([''+s,d,a.id])};
+ /* d>0: customer pays more; d<0: shop pays. Cash sale -> counter cash. Credit sale -> customer's account first. */
+ const money=(r,d)=>{r.td=d;if(!cr){r.cash=d;return}const owed=(custs().find(x=>x.n===who)||{}).b||0,ad=d<0?Math.min(-d,owed):0;r.cr=d<0?-ad:d;r.cash=d<0?-(-d-ad):0};
+ const fin=(r,adj,rc)=>{S.rets.push(r);if(r.cr){const c=r.cr>0?{id:BS.id(),t:r.t,by:r.by,kind:'udhaar',customer:who,amt:r.cr,saleId:ls.id,note:'Exchange'}:{id:BS.id(),t:r.t,by:r.by,kind:'adjust',who,amt:-r.cr};S.credits.push(c);BS.cloud.add('credits',c)}
+  BS.cloud.ret(r,adj);sv();retSale=null;val.ns=val.na=val.np='';BS.receipt(rc);render()};
+ const xno=()=>'X-'+Date.now().toString(36).slice(-5).toUpperCase();
  if(sel.ex=='Same'){if(!val.ns)return toast('Enter the new size');const ns=String(val.ns).trim();
   if(it&&Object.prototype.hasOwnProperty.call(qmap(it),ns)&&!(qtyOf(it,ns)>0))return toast('Size '+ns+' is out of stock');
-  fin(base({kind:'exchange-same',newSize:ns,diff:0}),[[ls.s,1],[ns,-1]],{title:'Exchange receipt',no:'X-'+Date.now().toString(36).slice(-5).toUpperCase(),lines:[['Article',ls.a],['Returned size',''+ls.s],['New size',ns],['Money change','None']],total:0,totalLabel:'Difference'});
+  const adj=[];bump(it,ls.s,1,adj);bump(it,ns,-1,adj);
+  fin(base({kind:'exchange-same',newSize:ns,diff:0}),adj,{title:'Exchange receipt',no:xno(),lines:[['Article',ls.a],['Returned size',''+ls.s],['New size',ns],['Money change','None']],total:0,totalLabel:'Difference'});
   toast(`Exchanged ${ls.a} size ${ls.s} for size ${ns}. No money change.`)}
- else if(sel.ex=='Different'){if(!val.na||!(+val.np>0))return toast('Enter the new article and price');const d=+val.np-ls.p;
+ else if(sel.ex=='Different'){if(!val.na||!(+val.np>0))return toast('Enter the new article and price');
+  const np=+val.np,d=np-ls.p,na=S.items.find(x=>!x.deleted&&String(x.no).toLowerCase()===String(val.na).trim().toLowerCase()),need=!!(na&&Object.keys(qmap(na)).length);
   if(d<0&&!BS.can('refund'))return;
-  fin(base({kind:'exchange-different',newArticle:val.na,newPrice:+val.np,diff:d}),[[ls.s,1]],{title:'Exchange receipt',no:'X-'+Date.now().toString(36).slice(-5).toUpperCase(),lines:[['Returned',ls.a+' ('+fmt(ls.p)+')'],['New article',val.na],['New price',fmt(val.np)]],total:d,totalLabel:d>0?'Customer pays':d<0?'Refund':'Difference'});
-  toast(`Returned ${ls.a}. New article ${val.na} at ${fmt(val.np)}. ${d>0?'Customer pays '+fmt(d):d<0?'Refund '+fmt(-d):'No difference'}`)}
+  ask(d>0?'Customer pays '+fmt(d)+' more':d<0?'You pay customer '+fmt(-d)+' from counter':'No money difference',[{l:'Put the returned pair back in stock?',o:['Yes','No (damaged)']}].concat(need?[{l:'Size of '+na.no+' (taken out of stock)',v:val.ns||''}]:[]),v=>{
+   const rs=v[0]==='Yes',ns=need?String(v[1]).trim():'';
+   if(need){if(!Object.prototype.hasOwnProperty.call(qmap(na),ns))return toast('Enter a size that exists for '+na.no,'err');if(!(qtyOf(na,ns)>0))return toast('Size '+ns+' of '+na.no+' is out of stock','err')}
+   const adj=[];if(rs)bump(it,ls.s,1,adj);if(need)bump(na,ns,-1,adj);
+   const r=base({kind:'exchange-different',newArticle:val.na,newAid:na?na.id:'',newSize:ns,newPrice:np,diff:d,restock:rs});money(r,d);r.pd=d-(na?+na.buy||0:0)+(rs?ob:0);
+   fin(r,adj,{title:'Exchange receipt',no:xno(),lines:[['Returned',ls.a+' ('+fmt(ls.p)+')'],['New article',val.na+(ns?' size '+ns:'')],['New price',fmt(np)],['Returned pair',rs?'Back in stock':'Not put back in stock']],total:d,totalLabel:d>0?'Customer pays':d<0?'Refund':'Difference'});
+   toast(`Returned ${ls.a}. New article ${val.na} at ${fmt(np)}. ${d>0?'Customer pays '+fmt(d):d<0?'Paid to customer '+fmt(-d)+' from counter':'No difference'}`)})}
  else{if(!BS.can('refund'))return;
-  fin(base({kind:'refund',amt:ls.p}),[[ls.s,1]],{title:'Refund receipt',no:'R-'+Date.now().toString(36).slice(-5).toUpperCase(),lines:[['Article',ls.a],['Size',''+ls.s],['Method','Cash']],total:ls.p,totalLabel:'Refunded'});
-  toast(`Cash refund of ${fmt(ls.p)} recorded. The pair goes back into stock.`)}}
+  ask('Refund '+esc2(ls.a)+' size '+esc2(ls.s)+(cr?' (credit sale: reduces what '+esc2(who)+' owes)':' (paid from counter cash)'),[{l:'Refund amount (Rs). Sale was '+fmt(ls.p),t:'number',v:ls.p},{l:'Put the pair back in stock?',o:['Yes','No (damaged)']}],v=>{
+   const a=Math.round(+v[0]);if(!(a>0)||a>ls.p)return toast('Refund must be between 1 and '+ls.p,'err');const rs=v[1]==='Yes',adj=[];if(rs)bump(it,ls.s,1,adj);
+   const r=base({kind:'refund',amt:a,restock:rs});money(r,-a);r.pd=-(a-(rs?ob:0));
+   fin(r,adj,{title:'Refund receipt',no:'R-'+Date.now().toString(36).slice(-5).toUpperCase(),lines:[['Article',ls.a],['Size',''+ls.s],['Paid from',r.cr?(r.cash?'Account '+fmt(-r.cr)+' + counter '+fmt(-r.cash):'Customer account'):'Counter cash'],['Stock',rs?'Pair back in stock':'Not put back in stock']],total:a,totalLabel:'Refunded'});
+   toast(`Refund of ${fmt(a)} recorded${r.cash?', '+fmt(-r.cash)+' deducted from counter cash':''}. ${rs?'The pair goes back into stock.':'Pair not restocked.'}`)})}}
+
+/* ---------- supplier delete (hidden, owner can restore in Settings) ---------- */
+function saDel(kind,k){if(!BS.can('write'))return;let recs,msg;
+ if(kind==='s'){const n=k==='No supplier'?'':k.toLowerCase();recs=S.sup.filter(r=>!r.deleted&&String(r.supplier||'').trim().toLowerCase()===n);msg='Delete supplier '+k+' with all '+recs.length+' record(s): bills, payments and photos?'}
+ else if(kind==='b'){recs=S.sup.filter(r=>!r.deleted&&billKey(r)===k);const b=bills().find(x=>x.key===k);msg='Delete '+(b?billTitle(b):'this bill')+' with its payments and photos?'}
+ else{recs=S.sup.filter(r=>r.id===k);msg='Delete this entry'+(recs[0]?' ('+fmt(recs[0].amt)+')':'')+'?'}
+ if(!recs.length)return;
+ BS.confirm(msg+' It is only hidden. The owner can restore it from Settings > Recently removed.',()=>{const ids=new Set(recs.map(r=>r.id)),now=Date.now();
+  recs.forEach(r=>BS.deleted.supplierPayments.push(Object.assign({},r,{deletedAt:now})));S.sup=S.sup.filter(r=>!ids.has(r.id));sv();
+  recs.forEach(r=>BS.cloud.soft('supplierPayments',r.id,true));toast('Deleted '+recs.length+' record(s)');saDraw();render()},'Delete')}
+
+/* ---------- label PDF: real PDF file, save to phone or share (WhatsApp etc.) ---------- */
+const c128w=t=>{const v=[];for(const ch of String(t)){let c=ch.charCodeAt(0);if(c<32||c>126)c=63;v.push(c-32)}let s=104;v.forEach((x,i)=>s+=x*(i+1));return[104].concat(v,[s%103,106]).map(x=>C128[x]).join('').split('').map(Number)};
+function lbPDF(items,sz,mode){const MM=72/25.4,lw=sz[0]*MM,lh=sz[1]*MM,roll=mode==='roll',pg=roll?[lw,lh]:[595.28,841.89],gap=3*MM,mg=8*MM,
+ cols=roll?1:Math.max(1,Math.floor((pg[0]-2*mg+gap)/(lw+gap))),rows=roll?1:Math.max(1,Math.floor((pg[1]-2*mg+gap)/(lh+gap))),per=cols*rows,ox=roll?0:(pg[0]-(cols*lw+(cols-1)*gap))/2,
+ cx=document.createElement('canvas').getContext('2d'),tw=(t,s,b)=>{cx.font=(b?'bold ':'')+s+'px Helvetica,Arial,sans-serif';return cx.measureText(t).width},
+ en=t=>String(t).replace(/[^\x20-\xff]/g,'?').replace(/[()\\]/g,m=>'\\'+m),fit=(t,s,b,mw)=>{t=String(t);while(t.length>1&&tw(t,s,b)>mw)t=t.slice(0,-1);return t},
+ T=(t,x,y,s,b)=>'BT /F'+(b?2:1)+' '+s.toFixed(2)+' Tf '+x.toFixed(2)+' '+y.toFixed(2)+' Td ('+en(t)+') Tj ET\n',pages=[];
+ for(let i=0;i<items.length;i+=per){let s='0 g\n';
+  items.slice(i,i+per).forEach((it,j)=>{const r=Math.floor(j/cols),x=ox+(j%cols)*(lw+gap),y=pg[1]-(roll?0:mg)-(r+1)*lh-r*gap,p=1.2*MM,a=it.a,f1=3.4*MM,f2=3*MM,f3=2.6*MM,iw=lw-2*p;
+   if(!roll)s+='q 0.4 w [2 2] 0 d 0.55 G '+x.toFixed(2)+' '+y.toFixed(2)+' '+lw.toFixed(2)+' '+lh.toFixed(2)+' re S Q\n';
+   const r1=y+lh-p-f1*.8,r2=r1-f2*1.3,sr=fit((a.cat||'')+(a.type?' \u00b7 '+a.type:''),f3,0,iw*.45),b1=fit(a.brand||'Brother Shoes',f1,1,iw-tw(sr,f3,0)-4);
+   s+=T(b1,x+p,r1,f1,1)+T(sr,x+lw-p-tw(sr,f3,0),r1,f3,0);
+   const z=it.size?'Size '+it.size:'',l2=fit(a.no+(a.color?' \u00b7 '+a.color:''),f2,1,iw-tw(z,f2,1)-4);s+=T(l2,x+p,r2,f2,1)+(z?T(z,x+lw-p-tw(z,f2,1),r2,f2,1):'');
+   const w=c128w(it.code),m=iw/(w.reduce((t,v)=>t+v,0)+20),y0=y+p+f3*1.4,h=r2-f2*.4-y0;let bx=x+p+10*m,bar=true;
+   if(h>4)w.forEach(v=>{if(bar)s+=bx.toFixed(3)+' '+y0.toFixed(2)+' '+(v*m).toFixed(3)+' '+h.toFixed(2)+' re f\n';bx+=v*m;bar=!bar});
+   const ct=fit(it.code+(a.tag?' \u00b7 Rs '+Number(a.tag).toLocaleString('en-US'):''),f3,0,iw);s+=T(ct,x+(lw-tw(ct,f3,0))/2,y+p,f3,0)});
+  pages.push(s)}
+ let o='%PDF-1.4\n';const off=[],put=(n,b)=>{off[n]=o.length;o+=n+' 0 obj\n'+b+'\nendobj\n'},np=pages.length;
+ put(1,'<</Type/Catalog/Pages 2 0 R>>');put(2,'<</Type/Pages/Count '+np+'/Kids ['+pages.map((_,i)=>(5+i*2)+' 0 R').join(' ')+']>>');
+ put(3,'<</Type/Font/Subtype/Type1/BaseFont/Helvetica/Encoding/WinAnsiEncoding>>');put(4,'<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Bold/Encoding/WinAnsiEncoding>>');
+ pages.forEach((c,i)=>{const q=5+i*2;put(q,'<</Type/Page/Parent 2 0 R/MediaBox [0 0 '+pg[0].toFixed(2)+' '+pg[1].toFixed(2)+']/Resources<</Font<</F1 3 0 R/F2 4 0 R>>>>/Contents '+(q+1)+' 0 R>>');put(q+1,'<</Length '+c.length+'>>\nstream\n'+c+'endstream')});
+ const n=4+np*2,xr=o.length;o+='xref\n0 '+(n+1)+'\n0000000000 65535 f \n'+off.slice(1).map(v=>String(v).padStart(10,'0')+' 00000 n \n').join('')+'trailer\n<</Size '+(n+1)+'/Root 1 0 R>>\nstartxref\n'+xr+'\n%%EOF';
+ const u=new Uint8Array(o.length);for(let i=0;i<o.length;i++)u[i]=o.charCodeAt(i)&255;return new Blob([u],{type:'application/pdf'})}
+async function lbSave(share){if(!LBI.length)return toast('Make labels first','err');
+ try{const blob=lbPDF(LBI,LBS,($('#lbm')||{}).value||'a4'),fn='labels-'+new Date().toISOString().slice(0,10)+'.pdf',P=NP();
+  const b64=()=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(blob)});
+  if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()&&P.Filesystem){
+   const w=await P.Filesystem.writeFile({path:fn,data:await b64(),directory:share?'CACHE':'DOCUMENTS',recursive:true});
+   if(share&&P.Share){await P.Share.share({title:'Barcode labels',url:w.uri,dialogTitle:'Send labels'});return}
+   return toast(share?'Saved in Documents. Open it from there to send.':'PDF saved in Documents: '+fn)}
+  const f=new File([blob],fn,{type:'application/pdf'});
+  if(share&&navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Barcode labels'});return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
+  toast(share?'Sharing is not supported here. PDF saved to Downloads: send it from there.':'PDF saved to Downloads: '+fn)}
+ catch(e){if(/cancel|abort/i.test((e&&(e.name+' '+e.message))||''))return;toast('Could not make the PDF: '+((e&&e.message)||e),'err')}}
 
 /* ---------- ledger / today numbers, always derived from saved records ---------- */
-function custs(){const m={};S.credits.forEach(c=>{if(c.deleted)return;let n;if(c.kind==='udhaar')n=(c.customer||'').trim()||'Customer';else if(c.kind==='received')n=(c.who||'').trim();if(!n)return;const o=m[n]||(m[n]={n,b:0,t:0});o.b+=(c.kind==='udhaar'?1:-1)*(+c.amt||0);o.t=Math.max(o.t,c.t||0)});return Object.values(m).filter(x=>x.b>0).sort((a,b)=>b.t-a.t)}
+function custs(){const m={};S.credits.forEach(c=>{if(c.deleted)return;let n;if(c.kind==='udhaar')n=(c.customer||'').trim()||'Customer';else if(c.kind==='received'||c.kind==='adjust')n=(c.who||'').trim();if(!n)return;const o=m[n]||(m[n]={n,b:0,t:0});o.b+=(c.kind==='udhaar'?1:-1)*(+c.amt||0);o.t=Math.max(o.t,c.t||0)});return Object.values(m).filter(x=>x.b>0).sort((a,b)=>b.t-a.t)}
 function receive(n){ask('Receive from '+n,[{l:'Amount (Rs)',t:'number'}],v=>{const a=+v[0];if(!(a>0))return toast('Enter an amount');const c=custs().find(x=>x.n===n),old=c?c.b:0,take=Math.min(a,old);if(!(take>0))return toast('Nothing is owed by '+n);{const r={id:BS.id(),t:Date.now(),by:BS.uid(),kind:'received',who:n,amt:take};S.credits.push(r);BS.cloud.recv(r)}sv();toast(`Received ${fmt(take)} from ${n}. Balance ${fmt(old-take)}`);render()})}
 const billKey=r=>String(r.supplier||'').trim().toLowerCase()+'|'+(String(r.bill||'').trim()||'-');
 const billTitle=b=>(b.sup?b.sup+' \u00b7 ':'')+'Bill '+b.no;
 function bills(){const m={};S.sup.forEach(r=>{if(r.deleted)return;const k=billKey(r),no=String(r.bill||'').trim()||'-',b=m[k]||(m[k]={key:k,no,sup:'',total:0,paid:0,t:0,pics:0});if(r.supplier&&!b.sup)b.sup=String(r.supplier).trim();if(r.type==='New bill')b.total+=+r.amt||0;else b.paid+=+r.amt||0;b.t=Math.max(b.t,r.t||0);b.pics+=+r.np||0});return Object.values(m).sort((x,y)=>y.t-x.t)}
-function todayStats(){const d0=new Date();d0.setHours(0,0,0,0);const t0=d0.getTime(),refunded=new Set(S.rets.filter(r=>r.kind==='refund'&&r.saleId).map(r=>r.saleId));
+function todayStats(){const d0=new Date();d0.setHours(0,0,0,0);const t0=d0.getTime(),refunded=new Set(S.rets.filter(r=>r.kind==='refund'&&r.saleId&&!r.v).map(r=>r.saleId));
  let tot=0,cash=0,cred=0,profit=0;const ss=S.sales.filter(s=>!s.deleted&&(s.t||0)>=t0&&!refunded.has(s.id));
  ss.forEach(s=>{const p=+s.p||0;tot+=p;if(s.m==='Credit')cred+=p;else cash+=p;const it=S.items.find(x=>x.id===s.aid)||S.items.find(x=>x.no===s.a);profit+=p-(it?+it.buy||0:0)});
  S.credits.forEach(c=>{if(!c.deleted&&c.kind==='received'&&(c.t||0)>=t0)cash+=+c.amt||0});
+ let pa=0;{const sid=new Set(ss.map(s=>s.id));S.rets.forEach(r=>{if(!r.v||(r.t||0)<t0)return;tot+=r.td||0;cash+=r.cash||0;cred+=r.cr||0;profit+=r.pd||0;if(r.kind==='refund'&&sid.has(r.saleId))pa--})}
  const ex=S.expl.filter(x=>!x.deleted&&(x.t||0)>=t0).sort((a,b)=>(b.t||0)-(a.t||0)),exp=ex.reduce((t,x)=>t+(+x.amt||0),0);
- return{tot,cash,cred,pairs:ss.length,profit,exp,net:profit-exp,ex}}
+ return{tot,cash,cred,pairs:ss.length+pa,profit,exp,net:profit-exp,ex}}
 
 
 /* ---------- Barcode / QR scanning (camera, works in the browser app; uses the native scanner too if the Android shell provides it) ---------- */
@@ -1076,14 +1143,14 @@ function code128(text){const vals=[];for(const ch of String(text)){let c=ch.char
  return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${x+10} 60" preserveAspectRatio="none" shape-rendering="crispEdges"><g fill="#000">${r}</g></svg>`}
 const LBSZ={'Small 40 x 25 mm':[40,25],'Standard 50 x 30 mm':[50,30],'Large 60 x 40 mm':[60,40]};
 let lbSel=new Set();
-function labelHTML(a,size,code){return`<div class="lb1"><div class="lbt"><b>${esc2(a.brand||(typeof settings!=='undefined'&&settings.shopName)||'Brother Shoes')}</b><span>${esc2(a.cat||'')}${a.type?' \u00b7 '+esc2(a.type):''}</span></div><div class="lbm"><span>${esc2(a.no)}${a.color?' \u00b7 '+esc2(a.color):''}</span><span>${size?'Size '+esc2(size):''}</span></div><div class="lbc">${code128(code)}</div><div class="lbn">${esc2(code)}${a.tag?' \u00b7 '+fmt(a.tag):''}</div></div>`}
+function labelHTML(a,size,code){LBI.push({a,size,code});return`<div class="lb1"><div class="lbt"><b>${esc2(a.brand||(typeof settings!=='undefined'&&settings.shopName)||'Brother Shoes')}</b><span>${esc2(a.cat||'')}${a.type?' \u00b7 '+esc2(a.type):''}</span></div><div class="lbm"><span>${esc2(a.no)}${a.color?' \u00b7 '+esc2(a.color):''}</span><span>${size?'Size '+esc2(size):''}</span></div><div class="lbc">${code128(code)}</div><div class="lbn">${esc2(code)}${a.tag?' \u00b7 '+fmt(a.tag):''}</div></div>`}
 function openLabels(){let el=$('#lbp');
  if(!el){el=document.createElement('div');el.id='lbp';document.body.appendChild(el);
   el.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a;
    if(a==='x'){el.classList.remove('on');document.body.classList.remove('lbmode')}
    else if(a==='all'){S.items.filter(x=>!x.deleted).forEach(x=>lbSel.add(x.id));drawLabelList()}
    else if(a==='none'){lbSel.clear();drawLabelList()}
-   else if(a==='make')makeLabels();else if(a==='back')labelPicker();else if(a==='print')printLabels()});
+   else if(a==='make')makeLabels();else if(a==='back')labelPicker();else if(a==='print')printLabels();else if(a==='pdf')lbSave(false);else if(a==='share')lbSave(true)});
   el.addEventListener('change',e=>{const c=e.target.closest('.lbr input');if(!c)return;if(c.checked)lbSel.add(c.dataset.id);else lbSel.delete(c.dataset.id)});
   el.addEventListener('input',e=>{if(e.target.id==='lbf')drawLabelList()})}
  S.items.forEach(x=>{if(!x.id){x.id=BS.id();BS.cloud.add('articles',x)}});sv();const live=S.items.filter(x=>!x.deleted);lbSel=new Set(live.length?[live[live.length-1].id]:[]);
@@ -1097,16 +1164,16 @@ function labelPicker(){const el=$('#lbp');
  el.innerHTML=`<div class="lbw"><div class="lbhd"><b>Barcode labels</b><button type="button" data-a="x">Close</button></div><p class="lbn0">Choose the articles. Each label carries a barcode that this app's scanner understands (article number and size).</p><label>Label size<select id="lbsz">${Object.keys(LBSZ).map((k,i)=>`<option${i==1?' selected':''}>${k}</option>`).join('')}</select></label><label>How many labels<select id="lbq"><option>One for every pair in stock</option><option>One for each size</option></select></label><input id="lbf" type="search" placeholder="Search article or brand" autocomplete="off"><div class="lbtools"><button type="button" data-a="all">Select all</button><button type="button" data-a="none">Clear</button></div><div id="lbl"></div><button type="button" class="p lbmk" data-a="make">Make labels</button></div>`;drawLabelList()}
 function drawLabelList(){const q=(($('#lbf')||{}).value||'').trim().toLowerCase(),live=S.items.filter(x=>!x.deleted&&(!q||(x.no+' '+(x.brand||'')+' '+(x.color||'')).toLowerCase().includes(q))).reverse(),box=$('#lbl');if(!box)return;
  box.innerHTML=live.length?live.map(a=>{const m=qmap(a),n=Object.values(m).reduce((t,v)=>t+(+v||0),0);return`<label class="lbr"><input type="checkbox" data-id="${esc2(a.id)}"${lbSel.has(a.id)?' checked':''}><span><b>${esc2(a.no)}</b> ${esc2(a.brand||'')} <small>${esc2(a.cat||'')}${a.color?', '+esc2(a.color):''} \u00b7 ${n} pairs</small></span></label>`}).join(''):'<p class="lbn0">No articles found. Save an article first.</p>'}
-function makeLabels(){try{makeLabels0();const e=$('#lbp');e.scrollTop=0;if($('#lbs'))toast('Labels ready. Tap Print / Save PDF.')}catch(x){toast('Labels failed: '+((x&&x.message)||x),'err')}}
-function makeLabels0(){const arts=S.items.filter(x=>!x.deleted&&lbSel.has(x.id));if(!arts.length)return toast('Select at least one article','err');
+function makeLabels(){try{makeLabels0();const e=$('#lbp');e.scrollTop=0;if($('#lbs'))toast('Labels ready. Tap Save PDF or Share.')}catch(x){toast('Labels failed: '+((x&&x.message)||x),'err')}}
+function makeLabels0(){LBI=[];const arts=S.items.filter(x=>!x.deleted&&lbSel.has(x.id));if(!arts.length)return toast('Select at least one article','err');
  const sz=LBSZ[$('#lbsz').value]||[50,30],perPair=$('#lbq').selectedIndex===0,out=[];arts.forEach(a=>{if(!a.q||!Object.keys(a.q).length){const m=parseSizes(a.sizes);if(Object.keys(m).length)a.q=m}});
  arts.forEach(a=>{const m=qmap(a),sizes=Object.keys(m).sort((x,y)=>parseFloat(x)-parseFloat(y));
   if(!sizes.length){out.push(labelHTML(a,'',String(a.no)));return}
   sizes.forEach(z=>{const n=perPair?Math.max(0,+m[z]||0):1;for(let i=0;i<n;i++)out.push(labelHTML(a,z,a.no+'-'+z))})});
  if(!out.length){arts.forEach(a=>{const m=qmap(a),k=Object.keys(m);if(k.length)k.forEach(z=>out.push(labelHTML(a,z,a.no+'-'+z)));else out.push(labelHTML(a,'',String(a.no)))})}if(!out.length)return toast('Nothing to label','err');
  if(out.length>300)return toast('That is '+out.length+' labels. Select fewer articles (300 at a time).','err');
- const el=$('#lbp');el.style.setProperty('--lw',sz[0]+'mm');el.style.setProperty('--lh',sz[1]+'mm');
- el.innerHTML=`<div class="lbw"><div class="lbhd"><b>${out.length} labels</b><span><button type="button" data-a="back">Back</button><button type="button" class="p" data-a="print">Print / Save PDF</button></span></div><p class="lbn0 lbctl">Scanning a printed label opens that article and size.</p><div id="lbs">${out.join('')}</div></div>`}
+ LBS=sz;const el=$('#lbp');el.style.setProperty('--lw',sz[0]+'mm');el.style.setProperty('--lh',sz[1]+'mm');
+ el.innerHTML=`<div class="lbw"><div class="lbhd"><b>${out.length} labels</b><span><button type="button" data-a="back">Back</button></span></div><div class="lbctl"><label>PDF pages<select id="lbm"><option value="a4">A4 sheet (many labels per page)</option><option value="roll">One label per page (label printer)</option></select></label><div class="lbtools"><button type="button" class="p" data-a="pdf">Save PDF</button><button type="button" class="p" data-a="share">Share</button><button type="button" data-a="print">Print</button></div></div><p class="lbn0 lbctl">Scanning a printed label opens that article and size.</p><div id="lbs">${out.join('')}</div></div>`}
 
 
 /* ---------- Supplier accounts: bills as references, pay little by little, totals, photos as proof only ---------- */
@@ -1115,12 +1182,12 @@ let saOpen={},saTot=false;
  const el=document.createElement('div');el.id='sa';document.body.appendChild(el);
  el.addEventListener('click',e=>{const t=e.target.closest('[data-s]');if(!t)return;const a=t.dataset.s,k=t.dataset.k;
   if(a==='x')el.classList.remove('on');else if(a==='bills')openBills();else if(a==='tot'){saTot=!saTot;saDraw()}else if(a==='tg'){saOpen[k]=!saOpen[k];saDraw()}
-  else if(a==='nb')saNew();else if(a==='pay')saPayPick();else if(a==='ph')saProof();else if(a==='bp')saPay(k);else if(a==='bf')saPhoto(k)})})();
+  else if(a==='nb')saNew();else if(a==='pay')saPayPick();else if(a==='ph')saProof();else if(a==='bp')saPay(k);else if(a==='bf')saPhoto(k);else if(a==='ds')saDel('s',k);else if(a==='db')saDel('b',k);else if(a==='dl')saDel('l',t.dataset.id)})})();
 const saRem=b=>Math.max(0,b.total-b.paid),saNames=()=>[...new Set(S.sup.filter(r=>!r.deleted&&r.supplier).map(r=>String(r.supplier).trim()))];
 function openSupAcc(){$('#sa').classList.add('on');saDraw()}
 function saDraw(){const el=$('#sa'),bl=bills(),by={};bl.forEach(b=>{const n=b.sup||'No supplier';(by[n]=by[n]||[]).push(b)});const names=Object.keys(by).sort(),T=bl.reduce((o,b)=>{o.t+=b.total;o.p+=b.paid;return o},{t:0,p:0});
  el.innerHTML=`<div class="w"><div class="rw"><b style="font-size:19px">Supplier accounts</b><span><button data-s="bills">Photos</button> <button data-s="x">Close</button></span></div><div class="c"><div class="rw"><span>All bills</span><b>${fmt(T.t)}</b></div><div class="rw"><span>Paid so far</span><b>${fmt(T.p)}</b></div><div class="rw"><span>Still to pay</span><b class="rem">${fmt(Math.max(0,T.t-T.p))}</b></div><button data-s="tot" style="width:100%">${saTot?'Hide':'Show'} total by supplier</button>${saTot?names.map(n=>`<div class="rw"><span>${esc2(n)}</span><b>${fmt(by[n].reduce((t,b)=>t+saRem(b),0))}</b></div>`).join(''):''}</div><div class="tb"><button class="p" data-s="nb">+ New bill</button><button class="p" data-s="pay">+ Payment</button><button data-s="ph">+ Photo only</button></div>`+
- (names.length?names.map(n=>{const bs=by[n],r=bs.reduce((t,b)=>t+saRem(b),0);return`<div class="c"><div class="rw" data-s="tg" data-k="${esc2(n)}" style="cursor:pointer"><b>${esc2(n)}</b><span class="${r?'rem':'ok'}">${r?fmt(r)+' due':'Settled'}</span></div>`+(saOpen[n]?bs.map(b=>{const h=S.sup.filter(x=>!x.deleted&&x.type!=='Proof'&&billKey(x)===b.key).sort((x,y)=>(x.t||0)-(y.t||0)).map(x=>`<div class="rw"><small>${new Date(x.t||0).toLocaleDateString()} · ${x.type==='New bill'?'Bill':'Paid'}${x.note?' · '+esc2(x.note):''}</small><small>${x.type==='New bill'?'':'-'}${fmt(x.amt)}</small></div>`).join('');return`<div class="bb"><div class="rw"><b>Bill ${esc2(b.no)}</b><span>${fmt(b.total)}</span></div>${h}<div class="rw"><span>Remaining</span><b class="${saRem(b)?'rem':'ok'}">${fmt(saRem(b))}</b></div><div class="tb"><button class="p" data-s="bp" data-k="${esc2(b.key)}">Pay</button><button data-s="bf" data-k="${esc2(b.key)}">Add photo (${b.pics})</button></div></div>`}).join(''):`<small>${bs.length} bill(s). Tap to open.</small>`)+`</div>`}).join(''):'<p><small>No supplier bills yet. Tap + New bill.</small></p>')+'</div>'}
+ (names.length?names.map(n=>{const bs=by[n],r=bs.reduce((t,b)=>t+saRem(b),0);return`<div class="c"><div class="rw" data-s="tg" data-k="${esc2(n)}" style="cursor:pointer"><b>${esc2(n)}</b><span class="${r?'rem':'ok'}">${r?fmt(r)+' due':'Settled'}</span></div>`+(saOpen[n]?bs.map(b=>{const h=S.sup.filter(x=>!x.deleted&&x.type!=='Proof'&&billKey(x)===b.key).sort((x,y)=>(x.t||0)-(y.t||0)).map(x=>`<div class="rw"><small>${new Date(x.t||0).toLocaleDateString()} · ${x.type==='New bill'?'Bill':'Paid'}${x.note?' · '+esc2(x.note):''}</small><span><small>${x.type==='New bill'?'':'-'}${fmt(x.amt)}</small><button class="dg x" data-s="dl" data-id="${esc2(x.id)}" aria-label="Delete entry">✕</button></span></div>`).join('');return`<div class="bb"><div class="rw"><b>Bill ${esc2(b.no)}</b><span>${fmt(b.total)}</span></div>${h}<div class="rw"><span>Remaining</span><b class="${saRem(b)?'rem':'ok'}">${fmt(saRem(b))}</b></div><div class="tb"><button class="p" data-s="bp" data-k="${esc2(b.key)}">Pay</button><button data-s="bf" data-k="${esc2(b.key)}">Add photo (${b.pics})</button><button class="dg" data-s="db" data-k="${esc2(b.key)}">Delete bill</button></div></div>`}).join('')+`<div class="tb"><button class="dg" data-s="ds" data-k="${esc2(n)}">Delete supplier</button></div>`:`<small>${bs.length} bill(s). Tap to open.</small>`)+`</div>`}).join(''):'<p><small>No supplier bills yet. Tap + New bill.</small></p>')+'</div>'}
 function saAdd(r0,img,msg){const r=Object.assign({id:BS.id(),t:Date.now(),by:BS.uid()},r0);if(img){r.img=img;r.np=1;IMGDB.put(r.id,{img,imgs:[]})}S.sup.push(r);BS.cloud.sup(r,0);sv();const b=bills().find(x=>x.key===billKey(r));toast(msg+(b&&b.total?' Remaining '+fmt(saRem(b)):''));saDraw()}
 function saNew(){if(!BS.can('write'))return;ask('New supplier bill',[{l:'Supplier name',dl:saNames(),ph:'e.g., Ali Traders'},{l:'Bill number / reference'},{l:'Bill total (Rs)',t:'number'},{l:'Note'},{l:'Photo of bill, kept as proof only (optional)',t:'photo'}],v=>{const a=+v[2];if(!v[0].trim())return toast('Enter the supplier name');if(!(a>0))return toast('Enter the bill total');saAdd({type:'New bill',supplier:v[0].trim(),bill:v[1].trim(),amt:a,note:v[3]||''},v[4],'Bill saved: '+fmt(a)+'.')})}
 function saPayPick(){if(!BS.can('write'))return;const due=bills().filter(b=>saRem(b)>0&&b.sup),names=[...new Set(due.map(b=>b.sup))];if(!names.length)return toast('No unpaid supplier bills. Add a bill first');
@@ -1136,11 +1203,11 @@ function saPhoto(key){if(!BS.can('write'))return;ask('Add photo to this bill',[{
 
 /* ---------- Cart: many articles / sizes / quantities, discount, round final amount ---------- */
 let CART=[],cartPay='Cash';
-(function(){const st=document.createElement('style');st.textContent='#cfab{position:fixed;right:10px;bottom:84px;z-index:50;display:none;gap:8px}#cfab button{border:0;border-radius:22px;padding:11px 15px;font:700 14px system-ui;color:#fff;background:#2f7bff;box-shadow:0 4px 14px #0006}#cfab .g{background:#12c39a}#ctp{position:fixed;inset:0;z-index:300;background:#0b1220;color:#e8f0ff;overflow:auto;padding:14px;display:none;font:15px system-ui}#ctp.on{display:block}#ctp .w{max-width:34rem;margin:0 auto}#ctp .r{display:flex;align-items:center;gap:8px;border-bottom:1px solid #26385e;padding:9px 0}#ctp .r>span{flex:1}#ctp small{color:#9fb4dc}#ctp button{border:0;border-radius:10px;padding:8px 12px;background:#26385e;color:#fff;font-size:15px}#ctp button.p{background:#12c39a;font-weight:700}#ctp input,#ctp select{width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid #38527f;background:#101b33;color:#fff;font-size:16px;margin:4px 0 10px}#ctp .tot{font-size:22px;font-weight:800;margin:6px 0}';document.head.appendChild(st);
+(function(){const st=document.createElement('style');st.textContent='#cfab{position:fixed;right:10px;bottom:84px;z-index:35;display:none;gap:8px}#cfab button{border:0;border-radius:22px;padding:11px 15px;font:700 14px system-ui;color:#fff;background:#2f7bff;box-shadow:0 4px 14px #0006}#cfab .g{background:#12c39a}#ctp{position:fixed;inset:0;z-index:300;background:#0b1220;color:#e8f0ff;overflow:auto;padding:14px;display:none;font:15px system-ui}#ctp.on{display:block}#ctp .w{max-width:34rem;margin:0 auto}#ctp .r{display:flex;align-items:center;gap:8px;border-bottom:1px solid #26385e;padding:9px 0}#ctp .r>span{flex:1}#ctp small{color:#9fb4dc}#ctp button{border:0;border-radius:10px;padding:8px 12px;background:#26385e;color:#fff;font-size:15px}#ctp button.p{background:#12c39a;font-weight:700}#ctp input,#ctp select{width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid #38527f;background:#101b33;color:#fff;font-size:16px;margin:4px 0 10px}#ctp .tot{font-size:22px;font-weight:800;margin:6px 0}';document.head.appendChild(st);
  const f=document.createElement('div');f.id='cfab';f.innerHTML='<button class="g" id="cadd">+ Add to cart</button><button id="cshow">Cart</button>';document.body.appendChild(f);
  const c=document.createElement('div');c.id='ctp';document.body.appendChild(c);
  $('#cadd').onclick=cartAdd;$('#cshow').onclick=cartOpen})();
-function cartFab(){const f=$('#cfab');if(!f)return;const on=cur===0&&!!$('#st');f.style.display=on?'flex':'none';$('#cshow').textContent='Cart ('+CART.reduce((t,l)=>t+l.q,0)+')'}
+function cartFab(){const f=$('#cfab');if(!f)return;const ap=$('#app'),on=cur===0&&!!$('#st')&&!!ap&&!ap.hidden&&$('#auth').hidden;f.style.display=on?'flex':'none';$('#cshow').textContent='Cart ('+CART.reduce((t,l)=>t+l.q,0)+')'}
 function cartAdd(){const a=art();if(!a)return toast('Search and select an article first');const z=sel.size;if(!z)return toast('Select a size first');if(!(price>0))return toast('Set the final price first');
  const have=CART.filter(l=>l.aid===a.id&&l.s===z).reduce((t,l)=>t+l.q,0);if(have+1>qtyOf(a,z))return toast('Only '+qtyOf(a,z)+' in stock for size '+z,'err');
  const l=CART.find(l=>l.aid===a.id&&l.s===z&&l.p===price);if(l)l.q++;else CART.push({aid:a.id,a:a.no,cat:a.cat||'',s:z,q:1,p:price});cartFab();toast('Added: '+a.no+' / size '+z+'. Cart has '+CART.reduce((t,l)=>t+l.q,0)+' pair(s).')}
@@ -1187,7 +1254,7 @@ const SC=[
  {l:'Payment history: open Return / Exchange',b:[345,1810,740,1880],f:()=>go(4)},
  {l:'Add bill or payment',w:1,b:[983,1920,1133,2070],f:openSupAcc}],
 [{l:'Same article, other size',b:[330,1043,593,1373],g:'ex',v:'Same'},{l:'Different article',b:[622,1043,874,1373],g:'ex',v:'Different'},{l:'Cash refund',b:[903,1043,1153,1373],g:'ex',v:'Cash'},
- {l:'New size',w:1,b:[810,1448,1088,1530],in:'ns',ph:'e.g., 40'},{l:'New article number',w:1,b:[810,1596,1088,1676],in:'na',ph:'e.g., 12345'},{l:'New price',w:1,b:[810,1742,1088,1822],in:'np',n:1,ph:'Rs 0'},{l:'Confirm',w:1,b:[330,1897,1108,2030],f:confirmRet}],
+ {l:'New size',w:1,b:[810,1448,1088,1530],in:'ns',ph:'e.g., 40'},{l:'New article number',w:1,b:[810,1596,1088,1676],in:'na',ph:'e.g., 12345'},{l:'New price',w:1,b:[810,1742,1088,1822],in:'np',n:1,ph:'Rs 0'},{l:'Confirm',w:1,b:[330,1897,1108,2030],f:confirmRet},{l:'Choose another sale to return',b:[95,438,800,502],f:pickSale}],
 [{l:'Owner',b:[320,765,498,836],g:'role',v:'Owner',f:()=>BS.setView('Owner')},{l:'Staff',b:[523,765,670,836],g:'role',v:'Staff',f:()=>BS.setView('Staff')},{l:'Partner view-only',b:[693,765,1105,836],g:'role',v:'Partner',f:()=>BS.setView('Partner')},
  {l:'English',b:[360,1120,577,1225],g:'lang',v:'English'},{l:'Urdu',b:[600,1120,735,1225],g:'lang',v:'Urdu',f:()=>toast('اردو منتخب ہو گئی')},
  {l:'Upload shop logo',o:1,b:[806,898,1112,1266],f:()=>$('#logo').click()},
