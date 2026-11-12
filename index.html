@@ -282,30 +282,6 @@ html,body{background:#06112a!important;color-scheme:dark}
 .lbc{flex:1;min-height:0;margin:.6mm 0}.lbc svg{width:100%;height:100%;display:block}.lbn{font-size:2.6mm;text-align:center;font-family:monospace}
 @media print{@page{margin:4mm}#lbp:not(.on){display:none!important}body.lbmode #rc{display:none!important}#lbp.on{position:static!important;display:block!important;overflow:visible!important;background:#fff!important;color:#000!important;padding:0!important}.lbhd,.lbctl{display:none!important}#lbs{justify-content:start}}
 </style>
-<style id="cartcss">
-.cbtn{position:absolute;z-index:4;display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(120,170,255,.55);border-radius:999px;background:rgba(20,40,80,.85);color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-weight:700;white-space:nowrap;padding:0;cursor:pointer}
-.cbtn.add{background:linear-gradient(135deg,#2f7bff,#12c39a);border-color:transparent}
-.cbtn.cv.has{border-color:#12c39a;box-shadow:0 0 10px rgba(18,195,154,.6)}
-#cp{position:fixed;inset:0;z-index:62;background:rgba(5,10,24,.97);color:#fff;display:none;overflow-y:auto;padding:.8rem .8rem calc(1.2rem + env(safe-area-inset-bottom,0px))}
-#cp.on{display:block}
-.cpw{max-width:34rem;margin:0 auto;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
-.cph{display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.6rem;font-size:1.3rem}
-#cp button{min-height:44px;padding:0 1rem;border:0;border-radius:99px;font:inherit;color:#fff;background:#1a2a48;cursor:pointer}
-#cp button.p{background:linear-gradient(135deg,#2f7bff,#12c39a);font-weight:700}
-#cp button.on{background:#12c39a;color:#04201a;font-weight:700}
-.cpl{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:.5rem;padding:.6rem .2rem;border-top:1px solid #243558}
-.cpi small{display:block;color:#9fb4dc}.cpi span{color:#9fe8e4}
-.cpq{display:flex;align-items:center;gap:.4rem}.cpq button{width:44px;padding:0!important;font-size:1.3rem}
-.cpp{padding:.2rem .7rem!important;line-height:1.1;text-align:center}.cpp small{display:block;font-size:.65rem;color:#9fb4dc}.cpp.low{background:#5a1f2a!important}.cpp.low small{color:#ffb4bc}
-.cpx{width:44px;padding:0!important;background:transparent!important;color:#ff8a8a!important}
-.cpe{color:#9fb4dc;text-align:center;padding:2rem 0}
-.cpt{margin:.8rem 0;padding:.8rem;border:1px solid #2f4a7a;border-radius:1rem;background:#0f1a33}
-.cpt div{display:flex;justify-content:space-between;gap:.5rem;padding:.2rem 0}.cpt span{color:#9fb4dc}
-.cpt .cptt{border-top:1px solid #2f4a7a;margin-top:.3rem;padding-top:.5rem;font-size:1.25rem}.cpt .cptt span{color:#fff}
-.cpd{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:.5rem 0}.cpd>button{flex:1}.cpd>span{color:#9fb4dc}
-.cpk{width:100%;margin-top:.4rem;min-height:52px!important;font-size:1.1rem}.cpc{width:100%;margin-top:.5rem;background:transparent!important;color:#ff9a9a!important}
-@media print{#cp{display:none!important}}
-</style>
 </head><body>
 <div id="boot"><img src="logo.png" alt="Brother Shoes"><p>BROTHER SHOES</p></div>
 
@@ -416,8 +392,6 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const B=window.BS={deleted:{articles:[],expenses:[]}};
-/* true inside the installed Android app (WebView / Capacitor). Google's sign-in is blocked there and bounces the person to the phone browser ("Access blocked: Authorization Error"), so every Google pop-up is skipped in the app. */
-const IN_APP=B.inApp=(()=>{try{const C=window.Capacitor;if(C&&C.isNativePlatform&&C.isNativePlatform())return true}catch(e){}return /; wv\)/.test(navigator.userAgent||'')||/^(capacitor|file|ionic|app):/.test(location.protocol)})();
 const NEED=!(typeof firebaseConfig==='object'&&firebaseConfig&&firebaseConfig.apiKey&&firebaseConfig.projectId&&!/PASTE|YOUR_/i.test(firebaseConfig.apiKey+firebaseConfig.projectId));
 const FB_CDN='https://www.gstatic.com/firebasejs/10.12.2/';
 const FAKE='@brothershoes.app';
@@ -650,7 +624,6 @@ async function doSignup(ev){ev.preventDefault();if(loginBusy)return;
 async function social(kind){if(loginBusy)return;
  if(NEED)return msg('Setup needed: paste your firebaseConfig into index.html (see README).','err');
  if(!navigator.onLine)return msg('No internet. You need internet to log in.','err');
- if(IN_APP){msg('Google and Apple sign-in do not work inside the installed app. Please log in with your email or username and password.','err');return}
  loginBusy=true;primeVideo();msg('Opening '+(kind==='google'?'Google':'Apple')+'…','');
  try{const pr=kind==='google'?new firebase.auth.GoogleAuthProvider():new firebase.auth.OAuthProvider('apple.com');
   await fb.auth.setPersistence($('#lgRem').checked?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION);
@@ -847,7 +820,7 @@ const ACT={
 /* ---------- Google Drive backup ---------- */
 const drive=B.drive={tok:null,exp:0,client:null,timer:null,busy:false,
  async lib(){if(window.google&&google.accounts&&google.accounts.oauth2)return;await loadScript('https://accounts.google.com/gsi/client');if(!(window.google&&google.accounts&&google.accounts.oauth2))throw new Error('Google library not loaded')},
- async token(interactive){if(drive.tok&&Date.now()<drive.exp-60000)return drive.tok;if(IN_APP)throw new Error('Google Drive backup does not work inside the installed app. Open the website in Chrome to use it');await drive.lib();
+ async token(interactive){if(drive.tok&&Date.now()<drive.exp-60000)return drive.tok;await drive.lib();
   return new Promise((res,rej)=>{if(!drive.client)drive.client=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:'https://www.googleapis.com/auth/drive.file',callback:()=>{}});
    drive.client.callback=r=>{if(r.error)return rej(new Error(r.error));drive.tok=r.access_token;drive.exp=Date.now()+(+r.expires_in||3600)*1000;LS.set('bs_drive','1');res(drive.tok)};
    drive.client.error_callback=x=>{const t=(x&&x.type)||'popup_failed';rej(new Error(t==='popup_failed_to_open'?'the Google sign-in popup was blocked'+((window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform())?'. Google sign-in does not work inside the installed APK. Open the website in Chrome to use Drive backup':'. Tap Backup now'):t))};
@@ -862,7 +835,7 @@ const drive=B.drive={tok:null,exp:0,client:null,timer:null,busy:false,
   const j=await(await drive.api(t,'https://www.googleapis.com/drive/v3/files?q='+q+'&orderBy=createdTime%20desc&pageSize=100&fields=files(id,name,createdTime)')).json();return j.files||[]},
  async connect(){if(!B.can('owner'))return;if(!navigator.onLine)return toast('Offline. Connect when internet is back.','err');
   try{const t=await drive.token(true);await drive.folder(t);toast('Connected to Google Drive');panelRefresh();drive.backup(false,true)}catch(e){toast('Could not connect Google Drive: '+e.message,'err')}},
- async backup(manual,silentOk){if(IN_APP){if(manual)toast('Google Drive backup does not work inside the installed app. Use Copy backup, or open the website in Chrome.','err');return}if(!B.can('owner',!manual)||drive.busy)return;
+ async backup(manual,silentOk){if(!B.can('owner',!manual)||drive.busy)return;
   if(!GOOGLE_CLIENT_ID)return;
   if(!navigator.onLine){LS.set('bs_dq','1');panelRefresh();if(manual)toast('Offline: backup is queued and will run when internet returns.','');return}
   drive.busy=true;
@@ -891,9 +864,9 @@ function scheduleClosing(){if(!GOOGLE_CLIENT_ID||real!=='Owner')return;
   if(LS.get('bs_dday','')!==n.toDateString()&&(n.getHours()*60+n.getMinutes())>=(h*60+m))drive.backup(false,true)};
  setInterval(chk,60000);setTimeout(chk,5000);
  if(LS.get('bs_drive','')==='1'&&navigator.onLine)drive.token(false).catch(()=>{});
- if(LS.get('bs_drive','')==='1'&&!IN_APP){drive.lib().catch(()=>{});driveGesture()}}
+ if(LS.get('bs_drive','')==='1'){drive.lib().catch(()=>{});driveGesture()}}
 /* A browser only lets Google's sign-in popup open right after a tap. So when a backup is due and the Drive pass has expired, the next tap in the app runs it. */
-function driveDue(){if(IN_APP)return false;if(LS.get('bs_drive','')!=='1'||real!=='Owner'||!navigator.onLine)return false;const n=new Date(),[h,m]=String(settings.closing||'21:00').split(':').map(Number),last=+LS.get('bs_dlast','0');
+function driveDue(){if(LS.get('bs_drive','')!=='1'||real!=='Owner'||!navigator.onLine)return false;const n=new Date(),[h,m]=String(settings.closing||'21:00').split(':').map(Number),last=+LS.get('bs_dlast','0');
  return LS.get('bs_dq','')==='1'||(LS.get('bs_dday','')!==n.toDateString()&&(n.getHours()*60+n.getMinutes())>=(h*60+m))||(Date.now()-last>26*3600*1000)}
 let driveTry=0;
 function driveGesture(){if(driveGesture.on)return;driveGesture.on=true;
@@ -1110,109 +1083,63 @@ function openLabels(){let el=$('#lbp');
    if(a==='x'){el.classList.remove('on');document.body.classList.remove('lbmode')}
    else if(a==='all'){S.items.filter(x=>!x.deleted).forEach(x=>lbSel.add(x.id));drawLabelList()}
    else if(a==='none'){lbSel.clear();drawLabelList()}
-   else if(a==='make')makeLabels();else if(a==='back')labelPicker();else if(a==='print')printLabels();else if(a==='share')shareLabels()});
+   else if(a==='make')makeLabels();else if(a==='back')labelPicker();else if(a==='print')printLabels()});
   el.addEventListener('change',e=>{const c=e.target.closest('.lbr input');if(!c)return;if(c.checked)lbSel.add(c.dataset.id);else lbSel.delete(c.dataset.id)});
   el.addEventListener('input',e=>{if(e.target.id==='lbf')drawLabelList()})}
- const live=S.items.filter(x=>!x.deleted);lbSel=new Set(live.length?[live[live.length-1].id]:[]);
+ S.items.forEach(x=>{if(!x.id){x.id=BS.id();BS.cloud.add('articles',x)}});sv();const live=S.items.filter(x=>!x.deleted);lbSel=new Set(live.length?[live[live.length-1].id]:[]);
  el.classList.add('on');document.body.classList.add('lbmode');labelPicker()}
+function printLabels(){try{if(nat('Print')&&NP().Print.html){NP().Print.html($('#lbs').innerHTML);return}}catch(e){}
+ const css='.lb1{width:'+getComputedStyle($('#lbp')).getPropertyValue('--lw')+';height:'+getComputedStyle($('#lbp')).getPropertyValue('--lh')+';box-sizing:border-box;padding:1mm;page-break-inside:avoid;display:inline-block;font:7pt sans-serif;overflow:hidden}.lb1 svg{width:100%;height:9mm;display:block}.lbt,.lbm{display:flex;justify-content:space-between}';
+ const h='<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width"><title>Labels</title><style>'+css+'</style><body>'+$('#lbs').innerHTML+'<p style="font:14px sans-serif">Tap Menu, then Print.</p>';
+ try{const w=window.open('','_blank');if(w){w.document.write(h);w.document.close();setTimeout(()=>{try{w.print()}catch(e){}},400);return}}catch(e){}
+ try{window.print()}catch(e){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h],{type:'text/html'}));a.download='labels.html';a.click()}}
 function labelPicker(){const el=$('#lbp');
  el.innerHTML=`<div class="lbw"><div class="lbhd"><b>Barcode labels</b><button type="button" data-a="x">Close</button></div><p class="lbn0">Choose the articles. Each label carries a barcode that this app's scanner understands (article number and size).</p><label>Label size<select id="lbsz">${Object.keys(LBSZ).map((k,i)=>`<option${i==1?' selected':''}>${k}</option>`).join('')}</select></label><label>How many labels<select id="lbq"><option>One for every pair in stock</option><option>One for each size</option></select></label><input id="lbf" type="search" placeholder="Search article or brand" autocomplete="off"><div class="lbtools"><button type="button" data-a="all">Select all</button><button type="button" data-a="none">Clear</button></div><div id="lbl"></div><button type="button" class="p lbmk" data-a="make">Make labels</button></div>`;drawLabelList()}
 function drawLabelList(){const q=(($('#lbf')||{}).value||'').trim().toLowerCase(),live=S.items.filter(x=>!x.deleted&&(!q||(x.no+' '+(x.brand||'')+' '+(x.color||'')).toLowerCase().includes(q))).reverse(),box=$('#lbl');if(!box)return;
  box.innerHTML=live.length?live.map(a=>{const m=qmap(a),n=Object.values(m).reduce((t,v)=>t+(+v||0),0);return`<label class="lbr"><input type="checkbox" data-id="${esc2(a.id)}"${lbSel.has(a.id)?' checked':''}><span><b>${esc2(a.no)}</b> ${esc2(a.brand||'')} <small>${esc2(a.cat||'')}${a.color?', '+esc2(a.color):''} \u00b7 ${n} pairs</small></span></label>`}).join(''):'<p class="lbn0">No articles found. Save an article first.</p>'}
-let lbData=[],lbMM=[50,30];
-function c128mods(text){const vals=[];for(const ch of String(text)){let c=ch.charCodeAt(0);if(c<32||c>126)c=63;vals.push(c-32)}
- let sum=104;vals.forEach((v,i)=>sum+=v*(i+1));const seq=[104].concat(vals,[sum%103,106]);let x=10;const bars=[];
- seq.forEach(v=>{let bar=true;for(const w of C128[v]){const n=+w;if(bar)bars.push([x,n]);x+=n;bar=!bar}});return{bars,w:x+10}}
-function makeLabels(){try{
- const arts=S.items.filter(x=>!x.deleted&&lbSel.has(x.id));if(!arts.length)return toast('Select at least one article','err');
- const sz=LBSZ[$('#lbsz').value]||[50,30],perPair=$('#lbq').selectedIndex===0;
- const build=pp=>{const o=[];arts.forEach(a=>{const m=qmap(a),sizes=Object.keys(m).sort((x,y)=>parseFloat(x)-parseFloat(y));
-   if(!sizes.length){o.push({a,size:'',code:String(a.no)});return}
-   sizes.forEach(z=>{const n=pp?Math.max(0,Math.floor(+m[z]||0)):1;for(let i=0;i<n;i++)o.push({a,size:z,code:a.no+'-'+z})})});return o};
- let out=build(perPair),note='Scanning a printed label opens that article and size.';
- if(!out.length&&perPair){out=build(false);note='These articles show no pairs in stock, so one label per size was made.'}
- if(!out.length)return toast('Nothing to label for these articles','err');
+function makeLabels(){const arts=S.items.filter(x=>!x.deleted&&lbSel.has(x.id));if(!arts.length)return toast('Select at least one article','err');
+ const sz=LBSZ[$('#lbsz').value]||[50,30],perPair=$('#lbq').selectedIndex===0,out=[];arts.forEach(a=>{if(!a.q||!Object.keys(a.q).length){const m=parseSizes(a.sizes);if(Object.keys(m).length)a.q=m}});
+ arts.forEach(a=>{const m=qmap(a),sizes=Object.keys(m).sort((x,y)=>parseFloat(x)-parseFloat(y));
+  if(!sizes.length){out.push(labelHTML(a,'',String(a.no)));return}
+  sizes.forEach(z=>{const n=perPair?Math.max(0,+m[z]||0):1;for(let i=0;i<n;i++)out.push(labelHTML(a,z,a.no+'-'+z))})});
+ if(!out.length){arts.forEach(a=>{const m=qmap(a),k=Object.keys(m);if(k.length)k.forEach(z=>out.push(labelHTML(a,z,a.no+'-'+z)));else out.push(labelHTML(a,'',String(a.no)))})}if(!out.length)return toast('Nothing to label','err');
  if(out.length>300)return toast('That is '+out.length+' labels. Select fewer articles (300 at a time).','err');
- lbData=out;lbMM=sz;
  const el=$('#lbp');el.style.setProperty('--lw',sz[0]+'mm');el.style.setProperty('--lh',sz[1]+'mm');
- el.innerHTML=`<div class="lbw"><div class="lbhd"><b>${out.length} labels</b><span><button type="button" data-a="back">Back</button></span></div><div class="lbtools lbctl"><button type="button" class="p" data-a="share">Share as image</button><button type="button" data-a="print">Print / Save PDF</button></div><p class="lbn0 lbctl">${note} In the installed app use Share as image, then print it from your label printer app.</p><div id="lbs">${out.map(x=>labelHTML(x.a,x.size,x.code)).join('')}</div></div>`;
- }catch(e){toast('Could not make labels: '+((e&&e.message)||e),'err')}}
-function printLabels(){try{window.print();toast('If no print window opens, tap Share as image instead.')}catch(e){toast('Printing is not available here. Tap Share as image.','err')}}
-function labelCanvas(items,mm,px){const W=Math.round(mm[0]*px),H=Math.round(mm[1]*px),c=document.createElement('canvas');c.width=W;c.height=H*items.length;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
- items.forEach((it,i)=>{const y0=i*H,a=it.a,pad=1.2*px;g.fillStyle='#000';g.textBaseline='top';
-  g.textAlign='left';g.font='bold '+3.4*px+'px Arial,sans-serif';g.fillText(String(a.brand||settings.shopName||'Brother Shoes'),pad,y0+pad,W*.6);
-  g.textAlign='right';g.font=2.6*px+'px Arial,sans-serif';g.fillText((a.cat||'')+(a.type?' \u00b7 '+a.type:''),W-pad,y0+pad+.4*px,W*.38);
-  g.textAlign='left';g.font='bold '+3*px+'px Arial,sans-serif';g.fillText(String(a.no)+(a.color?' \u00b7 '+a.color:''),pad,y0+pad+4.2*px,W*.62);
-  g.textAlign='right';g.fillText(it.size?'Size '+it.size:'',W-pad,y0+pad+4.2*px,W*.36);
-  const by=y0+pad+7.6*px,bh=Math.max(10,H-pad*2-7.6*px-3.2*px),m=c128mods(it.code),u=(W-2*pad)/m.w;
-  m.bars.forEach(([x,n])=>{const x0=Math.round(pad+x*u),x1=Math.round(pad+(x+n)*u);g.fillRect(x0,by,Math.max(1,x1-x0),bh)});
-  g.textAlign='center';g.font=2.6*px+'px monospace';g.fillText(it.code+(a.tag?' \u00b7 '+fmt(a.tag):''),W/2,y0+H-pad-2.8*px,W-2*pad);
-  g.strokeStyle='#aaa';g.lineWidth=1;g.strokeRect(1,y0+1,W-2,H-2)});return c}
-async function shareLabels(){try{if(!lbData.length)return;const px=8,per=20,files=[],urls=[];
- for(let i=0;i<lbData.length;i+=per){const c=labelCanvas(lbData.slice(i,i+per),lbMM,px);urls.push(c.toDataURL('image/png'));const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(blob)files.push(new File([blob],'labels-'+(files.length+1)+'.png',{type:'image/png'}))}
- if(navigator.canShare&&files.length&&navigator.canShare({files})){try{await navigator.share({files,title:'Barcode labels'});return}catch(e){if(e&&e.name==='AbortError')return}}
- const box=$('#lbs');box.style.display='block';box.innerHTML=urls.map(u=>`<img src="${u}" style="max-width:100%;background:#fff;display:block;margin:0 auto 8px" alt="Labels">`).join('');toast('Press and hold a picture to save or share it.')}
- catch(e){toast('Could not make the picture: '+((e&&e.message)||e),'err')}}
+ el.innerHTML=`<div class="lbw"><div class="lbhd"><b>${out.length} labels</b><span><button type="button" data-a="back">Back</button><button type="button" class="p" data-a="print">Print / Save PDF</button></span></div><p class="lbn0 lbctl">Scanning a printed label opens that article and size.</p><div id="lbs">${out.join('')}</div></div>`}
 
-/* ---------- Cart: many articles / sizes / quantities in one bill, with a discount ---------- */
-let cart=[],cartDisc=null,cartPay='Cash',cartName='';
-try{cart=JSON.parse(localStorage.getItem('bs_cart')||'[]')||[];if(!Array.isArray(cart))cart=[];cartDisc=JSON.parse(localStorage.getItem('bs_cartd')||'null')}catch(e){cart=[];cartDisc=null}
-const cartSave=()=>{try{localStorage.setItem('bs_cart',JSON.stringify(cart));localStorage.setItem('bs_cartd',JSON.stringify(cartDisc))}catch(e){}};
-const cartCount=()=>cart.reduce((t,l)=>t+l.q,0);
-const cartSub=()=>cart.reduce((t,l)=>t+l.q*l.p,0);
-function cartTotal(){const sub=cartSub();let tot=sub;if(cartDisc&&sub>0){const v=+cartDisc.v||0;tot=cartDisc.mode==='total'?v:cartDisc.mode==='rs'?sub-v:sub-sub*v/100}return Math.max(0,Math.min(sub,Math.round(tot)))}
-const cartInCart=(aid,s)=>cart.filter(l=>l.aid===aid&&l.s===s).reduce((t,l)=>t+l.q,0);
-function addToCart(){if(!BS.can('sell'))return;const a=art();if(!a)return toast('Search and select an article first','err');const s=sel.size;if(!s)return toast('Select a size first','err');if(!(price>0))return toast('Set the final price first','err');
- const have=qtyOf(a,s),inc=cartInCart(a.id,String(s));
- if(inc+1>have)return toast(have>0?`Only ${have} pair(s) of size ${s} in stock (${inc} already in the cart)`:'Size '+s+' is out of stock','err');
- const l=cart.find(z=>z.aid===a.id&&z.s===String(s)&&z.p===price);if(l)l.q++;else cart.push({aid:a.id,no:a.no,s:String(s),p:price,q:1});
- cartSave();sel.size=null;toast(`Added ${a.no} / size ${s}. Cart: ${cartCount()} pair(s), ${fmt(cartSub())}. Pick another size or article, or open the cart.`);render()}
-function cartBar(c,st){if(c!==0)return;st.querySelectorAll('.cbtn').forEach(e=>e.remove());
- const mk=(box,txt,cls,fn,lab)=>{const e=document.createElement('button');e.type='button';e.className='cbtn '+cls;e.textContent=txt;e.setAttribute('aria-label',lab);Object.assign(e.style,PX(box),{fontSize:F(30)});e.onclick=fn;st.appendChild(e);return e};
- mk([690,1398,905,1478],'+ Add to cart','add',addToCart,'Add this article and size to the cart');
- mk([915,1398,1132,1478],'Cart ('+cartCount()+')','cv'+(cartCount()?' has':''),openCart,'Open the cart')}
-function openCart(){if(!BS.can('sell'))return;let el=$('#cp');if(!el){el=document.createElement('div');el.id='cp';document.body.appendChild(el);el.addEventListener('click',cartClick)}el.classList.add('on');drawCart()}
-function drawCart(){const el=$('#cp');if(!el)return;const sub=cartSub(),tot=cartTotal(),dis=sub-tot;
- const rows=cart.map((l,i)=>{const a=S.items.find(x=>x.id===l.aid),low=a&&+a.min>0&&l.p<+a.min;
-  return`<div class="cpl"><div class="cpi"><b>${esc2(l.no)}</b> <span>Size ${esc2(l.s)}</span>${a?`<small>${esc2([a.cat,a.brand,a.color].filter(Boolean).join(' \u00b7 '))}</small>`:''}</div><div class="cpq"><button type="button" data-c="dec" data-i="${i}" aria-label="One less">\u2212</button><b>${l.q}</b><button type="button" data-c="inc" data-i="${i}" aria-label="One more">+</button></div><button type="button" class="cpp${low?' low':''}" data-c="price" data-i="${i}">${fmt(l.p)}<small>${low?'below minimum':'each \u00b7 tap to change'}</small></button><button type="button" class="cpx" data-c="del" data-i="${i}" aria-label="Remove">\u2715</button></div>`}).join('');
- const dtxt=!cartDisc||!dis?'No discount':cartDisc.mode==='total'?'Customer pays '+fmt(tot):cartDisc.mode==='rs'?fmt(cartDisc.v)+' off':cartDisc.v+'% off';
- el.innerHTML=`<div class="cpw"><div class="cph"><b>Cart</b><button type="button" data-c="x">Keep shopping</button></div>${cart.length?rows:'<p class="cpe">The cart is empty. On the Find screen pick an article and size, then tap + Add to cart.</p>'}`+
- (cart.length?`<div class="cpt"><div><span>Subtotal (${cartCount()} pair${cartCount()==1?'':'s'})</span><b>${fmt(sub)}</b></div><div><span>Discount \u00b7 ${esc2(dtxt)}</span><b>${dis?'\u2212 '+fmt(dis):'\u2014'}</b></div><div class="cptt"><span>Customer pays</span><b>${fmt(tot)}</b></div></div>
- <div class="cpd"><button type="button" data-c="disc">Discount / bargain</button>${dis?'<button type="button" data-c="nodisc">Remove discount</button>':''}</div>
- <div class="cpd"><span>Round down to</span><button type="button" data-c="rd" data-v="10">10</button><button type="button" data-c="rd" data-v="50">50</button><button type="button" data-c="rd" data-v="100">100</button></div>
- <div class="cpd"><button type="button" class="${cartPay=='Cash'?'on':''}" data-c="pay" data-v="Cash">Cash</button><button type="button" class="${cartPay=='Credit'?'on':''}" data-c="pay" data-v="Credit">Credit</button></div>
- <button type="button" class="p cpk" data-c="out">Finish sale \u00b7 ${fmt(tot)}</button><button type="button" class="cpc" data-c="clear">Empty the cart</button>`:'')+`</div>`;
- cartPills()}
-function cartPills(){document.querySelectorAll('#st .cbtn.cv').forEach(e=>{e.textContent='Cart ('+cartCount()+')';e.classList.toggle('has',cartCount()>0)})}
-function cartClick(e){const b=e.target.closest('[data-c]');if(!b)return;const k=b.dataset.c,i=+b.dataset.i,l=cart[i];
- if(k==='x'){$('#cp').classList.remove('on');return}
- if(k==='inc'&&l){const a=S.items.find(x=>x.id===l.aid);if(!a||cartInCart(l.aid,l.s)+1>qtyOf(a,l.s))return toast('No more pairs of size '+l.s+' in stock','err');l.q++}
- else if(k==='dec'&&l){l.q--;if(l.q<=0)cart.splice(i,1)}
- else if(k==='del'&&l)cart.splice(i,1);
- else if(k==='price'&&l){return ask(`Price each: ${l.no} / size ${l.s}`,[{l:'Rs',t:'number',v:l.p}],v=>{if(+v[0]>0){l.p=+v[0];cartSave();drawCart()}else toast('Enter a price','err')})}
- else if(k==='disc'){return ask('Discount / bargain',[{l:'Type',o:['Customer pays this total (round figure)','Rs off the bill','% off the bill']},{l:'Amount',t:'number'}],v=>{const n=+v[1];if(!(n>=0)||v[1]==='')return toast('Enter a number','err');const mode=v[0].startsWith('Customer')?'total':v[0].startsWith('Rs')?'rs':'pct';if(mode==='pct'&&n>100)return toast('Percent cannot be more than 100','err');cartDisc={mode,v:n};cartSave();drawCart()})}
- else if(k==='nodisc')cartDisc=null;
- else if(k==='rd'){const v=+b.dataset.v,sub=cartSub(),t=Math.floor(sub/v)*v;if(t<=0||t>=sub){toast('Nothing to round off')}else cartDisc={mode:'total',v:t}}
- else if(k==='pay'){cartPay=b.dataset.v}
- else if(k==='clear'){return BS.confirm('Empty the cart?',()=>{cart=[];cartDisc=null;cartSave();drawCart();cartPills()})}
- else if(k==='out')return cartCheckout();
- cartSave();drawCart()}
-function cartCheckout(){if(!BS.can('sell'))return;if(!cart.length)return toast('The cart is empty','err');
- for(const l of cart){const a=S.items.find(x=>x.id===l.aid&&!x.deleted);if(!a)return toast(`Article ${l.no} was deleted. Remove it from the cart.`,'err');if(cartInCart(l.aid,l.s)>qtyOf(a,l.s))return toast(`Only ${qtyOf(a,l.s)} pair(s) of ${l.no} size ${l.s} left`,'err')}
- const done=name=>{const sub=cartSub(),tot=cartTotal(),dis=sub-tot,t=Date.now(),billId=BS.id(),units=[];cart.forEach(l=>{for(let i=0;i<l.q;i++)units.push(l)});
-  let left=tot;
-  units.forEach((l,i)=>{const a=S.items.find(x=>x.id===l.aid);let p=i===units.length-1?left:Math.min(left,Math.round(l.p*tot/sub));p=Math.max(0,p);left-=p;
-   ensureQ(a);bumpQ(a,l.s,-1);const rec={id:i===0?billId:BS.id(),t,by:BS.uid(),a:a.no,aid:a.id,s:l.s,p,m:cartPay,c:name||''};
-   S.sales.push(rec);if(rec.m==='Credit')S.credits.push({id:rec.id,t:rec.t,kind:'udhaar',customer:rec.c,amt:rec.p,saleId:rec.id});BS.cloud.sale(rec,l.s)});
-  sv();
-  const lines=cart.map(l=>[`${l.no} / size ${l.s}${l.q>1?' x'+l.q:''}`,fmt(l.p*l.q)]);
-  if(dis>0){lines.push(['Subtotal',fmt(sub)]);lines.push(['Discount','- '+fmt(dis)])}
-  lines.push(['Payment',cartPay+(name?' ('+name+')':'')]);
-  const pairs=cartCount();cart=[];cartDisc=null;cartName='';cartSave();$('#cp').classList.remove('on');
-  BS.receipt({t,no:'S-'+billId.slice(-6).toUpperCase(),title:'Sale receipt',lines,total:tot});
-  toast(`Sold ${pairs} pair${pairs==1?'':'s'} for ${fmt(tot)}${dis>0?' (discount '+fmt(dis)+')':''} \u00b7 ${cartPay}`);render()};
- if(cartPay==='Credit')ask('Customer name',[{l:'Name',v:cartName}],v=>{if(!v[0].trim())return toast('Name required for credit','err');cartName=v[0].trim();done(cartName)});else done('')}
-{const _ar=BS.afterRender;BS.afterRender=(c,st)=>{_ar&&_ar(c,st);try{cartBar(c,st)}catch(e){}}}
+
+/* ---------- Cart: many articles / sizes / quantities, discount, round final amount ---------- */
+let CART=[],cartPay='Cash';
+(function(){const st=document.createElement('style');st.textContent='#cfab{position:fixed;right:10px;bottom:84px;z-index:50;display:none;gap:8px}#cfab button{border:0;border-radius:22px;padding:11px 15px;font:700 14px system-ui;color:#fff;background:#2f7bff;box-shadow:0 4px 14px #0006}#cfab .g{background:#12c39a}#ctp{position:fixed;inset:0;z-index:300;background:#0b1220;color:#e8f0ff;overflow:auto;padding:14px;display:none;font:15px system-ui}#ctp.on{display:block}#ctp .w{max-width:34rem;margin:0 auto}#ctp .r{display:flex;align-items:center;gap:8px;border-bottom:1px solid #26385e;padding:9px 0}#ctp .r>span{flex:1}#ctp small{color:#9fb4dc}#ctp button{border:0;border-radius:10px;padding:8px 12px;background:#26385e;color:#fff;font-size:15px}#ctp button.p{background:#12c39a;font-weight:700}#ctp input,#ctp select{width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid #38527f;background:#101b33;color:#fff;font-size:16px;margin:4px 0 10px}#ctp .tot{font-size:22px;font-weight:800;margin:6px 0}';document.head.appendChild(st);
+ const f=document.createElement('div');f.id='cfab';f.innerHTML='<button class="g" id="cadd">+ Add to cart</button><button id="cshow">Cart</button>';document.body.appendChild(f);
+ const c=document.createElement('div');c.id='ctp';document.body.appendChild(c);
+ $('#cadd').onclick=cartAdd;$('#cshow').onclick=cartOpen})();
+function cartFab(){const f=$('#cfab');if(!f)return;const on=cur===0&&!!$('#st');f.style.display=on?'flex':'none';$('#cshow').textContent='Cart ('+CART.reduce((t,l)=>t+l.q,0)+')'}
+function cartAdd(){const a=art();if(!a)return toast('Search and select an article first');const z=sel.size;if(!z)return toast('Select a size first');if(!(price>0))return toast('Set the final price first');
+ const have=CART.filter(l=>l.aid===a.id&&l.s===z).reduce((t,l)=>t+l.q,0);if(have+1>qtyOf(a,z))return toast('Only '+qtyOf(a,z)+' in stock for size '+z,'err');
+ const l=CART.find(l=>l.aid===a.id&&l.s===z&&l.p===price);if(l)l.q++;else CART.push({aid:a.id,a:a.no,cat:a.cat||'',s:z,q:1,p:price});cartFab();toast('Added: '+a.no+' / size '+z+'. Cart has '+CART.reduce((t,l)=>t+l.q,0)+' pair(s).')}
+function cartSub(){return CART.reduce((t,l)=>t+l.p*l.q,0)}
+function cartOpen(){const el=$('#ctp');el.classList.add('on');cartDraw()}
+function cartDraw(){const el=$('#ctp'),sub=cartSub();
+ el.innerHTML=`<div class="w"><div class="r"><b style="font-size:19px;flex:1">Cart</b><button data-c="x">Close</button></div>`+(CART.length?CART.map((l,i)=>`<div class="r"><span><b>${esc2(l.a)}</b> <small>${esc2(l.cat)} · size ${esc2(l.s)} · ${fmt(l.p)} each</small></span><button data-c="m${i}">-</button><b>${l.q}</b><button data-c="p${i}">+</button><button data-c="d${i}">x</button></div>`).join(''):'<p><small>Cart is empty. On the sell screen pick an article and size, then tap "+ Add to cart".</small></p>')+
+ `<div class="tot">Total: ${fmt(sub)}</div><label>Discount <small>(Rs, or add % e.g. 10%)</small></label><input id="cdi" inputmode="text" placeholder="0"><label>Customer pays (final amount)</label><input id="cfi" inputmode="numeric" value="${sub}"><label>Payment</label><select id="cpy"><option${cartPay=='Cash'?' selected':''}>Cash</option><option${cartPay=='Credit'?' selected':''}>Credit</option></select><button class="p" data-c="ok" style="width:100%;padding:14px">Finalize and pay</button><button data-c="clr" style="width:100%;margin-top:8px">Empty cart</button></div>`;
+ const di=$('#cdi'),fi=$('#cfi');di.oninput=()=>{const t=di.value.trim();let d=t.endsWith('%')?sub*(parseFloat(t)||0)/100:(+t||0);d=Math.max(0,Math.min(sub,Math.round(d)));fi.value=sub-d};
+ fi.oninput=()=>{const v=Math.max(0,+fi.value||0);di.value=v<=sub?String(sub-v):'0'};$('#cpy').onchange=e=>{cartPay=e.target.value}}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#ctp [data-c]');if(!b)return;const k=b.dataset.c,i=+k.slice(1);
+ if(k==='x'){$('#ctp').classList.remove('on');cartFab();return}
+ if(k==='clr'){CART=[];cartDraw();return}
+ if(k[0]==='d'){CART.splice(i,1);cartDraw();return}
+ if(k[0]==='m'){if(--CART[i].q<=0)CART.splice(i,1);cartDraw();return}
+ if(k[0]==='p'){const l=CART[i],a=S.items.find(x=>x.id===l.aid),tot=CART.filter(y=>y.aid===l.aid&&y.s===l.s).reduce((t,y)=>t+y.q,0);if(tot+1>qtyOf(a,l.s))toast('Only '+qtyOf(a,l.s)+' in stock','err');else{l.q++;cartDraw()}return}
+ if(k==='ok')cartFinal()});
+function cartFinal(){if(!BS.can('sell'))return;if(!CART.length)return toast('Cart is empty');const sub=cartSub(),fin=Math.round(+$('#cfi').value);if(!(fin>=0)||fin>sub)return toast('Final amount must be between 0 and '+sub,'err');
+ for(const l of CART){const a=S.items.find(x=>x.id===l.aid),tot=CART.filter(y=>y.aid===l.aid&&y.s===l.s).reduce((t,y)=>t+y.q,0);if(!a||tot>qtyOf(a,l.s))return toast(l.a+' size '+l.s+': not enough stock','err')}
+ const pay=$('#cpy').value,go2=n=>{const units=[];CART.forEach(l=>{for(let i=0;i<l.q;i++)units.push({l,v:Math.floor(l.p*fin/sub)})});let diff=fin-units.reduce((t,u)=>t+u.v,0);for(let i=0;diff>0;i=(i+1)%units.length,diff--)units[i].v++;
+  const bill=BS.id(),t=Date.now(),lines=[];
+  units.forEach(u=>{const a=S.items.find(x=>x.id===u.l.aid);ensureQ(a);bumpQ(a,u.l.s,-1);const rec={id:BS.id(),t,by:BS.uid(),a:a.no,aid:a.id,s:u.l.s,p:u.v,m:pay,c:n||'',bill};S.sales.push(rec);if(pay=='Credit')S.credits.push({id:rec.id,t,kind:'udhaar',customer:n,amt:rec.p,saleId:rec.id});BS.cloud.sale(rec,u.l.s)});
+  CART.forEach(l=>lines.push([l.a+' ('+l.cat+') size '+l.s,'x'+l.q+' @ '+fmt(l.p)]));if(fin<sub)lines.push(['Discount','-'+fmt(sub-fin)]);lines.push(['Payment',pay+(n?' ('+n+')':'')]);
+  sv();BS.receipt({t,no:'S-'+bill.slice(-6).toUpperCase(),title:'Sale receipt',lines,total:fin});toast('Sold '+units.length+' pair(s) for '+fmt(fin));CART=[];$('#ctp').classList.remove('on');render()};
+ pay=='Credit'?ask('Customer name',[{l:'Name'}],v=>v[0].trim()?go2(v[0].trim()):toast('Name required for credit')):go2()}
 
 const szh=(i,x1,x2)=>({l:'Size '+(i+1),b:[x1,1492,x2,1636],g:'size',vf:()=>chipLabels()[i]||('#'+i),f:()=>{const lab=chipLabels()[i],a=art();if(!a){sel.size=null;return toast('Search and select an article first')}if(!lab){sel.size=null;return}if(!qtyOf(a,lab)){sel.size=null;toast('Size '+lab+' is out of stock')}}});
 const SC=[
@@ -1290,7 +1217,7 @@ function paint4(){const s=lastSale();
 function paint(){const st=$('#st');if(!st)return;st.querySelectorAll('.ov').forEach(e=>e.remove());const P=[paint0,paint1,paint2,paint3,paint4][cur];if(P)P()}
 window.BS_live=()=>{if($('#md').classList.contains('on'))return;const a=document.activeElement;if(a&&a.classList&&a.classList.contains('hs')){paint();return}render()};
 
-function render(){const st=$('#st');st.style.aspectRatio=(CR[cur][2]-CR[cur][0])+'/'+(CR[cur][3]-CR[cur][1]);st.innerHTML=`<img src="${IMGS[cur]}" alt="${NAMES[cur]} screen of the Brother Shoes app" draggable="false">`;
+function render(){setTimeout(()=>{try{cartFab()}catch(e){}},0);const st=$('#st');st.style.aspectRatio=(CR[cur][2]-CR[cur][0])+'/'+(CR[cur][3]-CR[cur][1]);st.innerHTML=`<img src="${IMGS[cur]}" alt="${NAMES[cur]} screen of the Brother Shoes app" draggable="false">`;
  const mk=h=>{const[a,b,c,d]=h.b,e=document.createElement(h.in?'input':'button');e.className='hs'+(h.q?' lt':'');e.setAttribute('aria-label',h.l);
   const[x0,y0,x1,y1]=CR[cur],cw=x1-x0,ch=y1-y0;Object.assign(e.style,{left:(a-x0)/cw*100+'%',top:(b-y0)/ch*100+'%',width:(c-a)/cw*100+'%',height:(d-b)/ch*100+'%'});
   if(h.in){e.value=val[h.in]||'';e.placeholder=h.ph||'';e.autocomplete='off';e.spellcheck=false;e.inputMode=h.n?'decimal':'text';if(h.q)e.enterKeyHint='search';const fb=FB[cur+':'+h.in];if(fb)e.style.setProperty('--fbg',fb);
