@@ -290,6 +290,10 @@ html,body{background:#06112a!important;color-scheme:dark}
 #md .rsr{display:flex;gap:.5rem;align-items:stretch}#md .rsr input{flex:1;min-width:0}#md .rsr button{flex:none;padding:0 1.1rem;border-radius:.9rem;border:1px solid var(--line);background:var(--pill);color:var(--pillfg)}
 .ov .pk{pointer-events:auto;border:0;border-radius:99px;padding:.25em .9em;background:linear-gradient(135deg,#2f7bff,#12c39a);color:#fff;font-weight:700;white-space:nowrap;cursor:pointer;font-family:inherit}
 #st .hs.lg{z-index:6}
+.ov .kt{position:relative;width:100%;height:100%;border-radius:99px;border:2px solid #d9a93a;background:linear-gradient(#4a3a14,#2a210b);box-shadow:inset 0 3px 8px rgba(0,0,0,.6),0 0 14px rgba(217,169,58,.35);transition:background .35s,border-color .35s,box-shadow .35s}
+.ov .kt.p1{border-color:#4aa3ff;background:linear-gradient(#173a66,#0d2240);box-shadow:inset 0 3px 8px rgba(0,0,0,.6),0 0 14px rgba(74,163,255,.4)}
+.ov .kt.p2{border-color:#21d6a0;background:linear-gradient(#0f4a3c,#08291f);box-shadow:inset 0 3px 8px rgba(0,0,0,.6),0 0 14px rgba(33,214,160,.45)}
+.ov .kn{position:absolute;top:8%;width:50%;height:84%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff9d6,#e2b23c 45%,#1fbf8f 110%);box-shadow:0 3px 8px rgba(0,0,0,.55);transition:left .38s cubic-bezier(.3,1.35,.5,1)}
 </style>
 </head><body>
 <div id="boot"><img src="logo.png" alt="Brother Shoes"><p>BROTHER SHOES</p></div>
@@ -444,17 +448,37 @@ B.setView=r=>{const rank={Owner:3,Staff:2,Partner:1};
  if(rank[r]>rank[real]){toast('Only the owner can switch to '+r+' mode. Your account is '+real+'.','err');sel.role=eff();return}
  view=(r===real)?null:r;sel.role=eff();
  toast(r==='Owner'?'Owner mode: full access':r==='Staff'?'Staff mode: Find / Sell and Sales only, no buying price or profit':'Partner mode: view only, no changes');
- refreshAll();if(eff()==='Staff'&&window.BS_goMenu)window.BS_goMenu()};
+ refreshAll();if(eff()==='Staff'&&window.BS_goMenu)setTimeout(window.BS_goMenu,800)};
 const sha=async s=>{try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('bs:'+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){let h=5381;for(const c of 'bs:'+s)h=((h<<5)+h+c.charCodeAt(0))|0;return 'x'+h}};
 B.setPin=async v=>{dev.pin=await sha(v);saveDev();toast('PIN saved on this phone')};
+const QS=['What was the name of your first school?','What is your mother\'s first name?','In which city were you born?','What was your first phone number?','What is your favourite teacher\'s name?'];
+const norm=s=>String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+B.pinAsk=(title,label,cb)=>{ask(title,[{l:label,t:'password'}],async v=>{(await sha(v[0]))===dev.pin?cb():toast('Wrong PIN','err')});
+ const b=document.createElement('button');b.type='button';b.textContent='Forgot PIN?';b.style.cssText='width:100%;margin-top:.7rem;background:transparent;border:0;color:#7fb2ff;text-decoration:underline;min-height:44px';
+ b.onclick=()=>{$('#md').classList.remove('on');B.forgotPin()};$('#mf').appendChild(b)};
+B.pinSetup=skipOld=>{if(real!=='Owner')return toast('Only the owner can do this.','err');
+ const go2=()=>ask(dev.pin?'Change PIN':'Set owner PIN',[{l:'New 4-digit PIN',t:'password'},{l:'Repeat new PIN',t:'password'},{l:'Security question (used if you forget the PIN)',o:QS},{l:'Your answer',t:'text'}],async v=>{
+  if(!/^\d{4}$/.test(v[0]))return toast('PIN must be 4 digits','err');if(v[0]!==v[1])return toast('The two PINs are different','err');if(!norm(v[3]))return toast('Enter an answer to the security question','err');
+  dev.pin=await sha(v[0]);dev.q=v[2];dev.a=await sha('a:'+norm(v[3]));saveDev();toast('PIN saved on this phone')});
+ (skipOld||!dev.pin)?go2():B.pinAsk('Current PIN','Enter your current 4-digit PIN',go2)};
+B.forgotPin=()=>{if(real!=='Owner')return toast('Only the owner can do this.','err');
+ const em=user&&user.email&&!String(user.email).endsWith(FAKE)?user.email:'',m=[];if(dev.q&&dev.a)m.push('Security question');if(em&&cloud.on())m.push('Account password ('+em+')');
+ if(!m.length)return toast('No recovery method is saved on this phone.','err');
+ ask('Reset PIN',[{l:'Verify with',o:m}],v=>{
+  if(v[0]==='Security question')ask(dev.q,[{l:'Your answer',t:'text'}],async x=>{(await sha('a:'+norm(x[0])))===dev.a?B.pinSetup(true):toast('Wrong answer','err')});
+  else ask('Account password',[{l:'Password of '+em,t:'password'}],async x=>{try{await fb.auth.signInWithEmailAndPassword(em,x[0]);B.pinSetup(true)}catch(e){toast('Wrong account password','err')}})})};
+B.resetData=kind=>{if(!B.can('owner'))return;if(!dev.pin)return toast('Set an owner PIN first (Settings > Change owner PIN).','err');
+ B.pinAsk('Owner PIN','Enter your PIN to reset data',()=>confirmBox(kind==='sales'?'Reset the sales summary? All sales, returns/exchanges and expenses will be removed. Customer credit and supplier accounts stay.':'Reset stock? All saved articles and their sizes will be removed.',async()=>{
+  const d=clean(B.backupObj());if(kind==='sales'){d.sales=[];d.rets=[];d.expl=[];d.exp=0}else{d.items=[];d.qty={}}
+  try{await cloud.restoreAll(d);toast('Reset done');refreshAll()}catch(e){toast('Reset failed','err')}},'Yes, reset'))};
 B.toggleLock=()=>{if(real!=='Owner')return toast('Only the owner can use lock mode.','err');
  const off=()=>{dev.lock=false;saveDev();sel.role=eff();toast('Unlocked: owner mode');refreshAll()};
- if(!dev.lock){dev.lock=true;saveDev();sel.role=eff();toast('Locked: staff mode ON');refreshAll();if(window.BS_goMenu)window.BS_goMenu();return}
- if(dev.pin)ask('Owner PIN',[{l:'Enter your 4-digit PIN',t:'password'}],async v=>{(await sha(v[0]))===dev.pin?off():toast('Wrong PIN','err')});else off()};
+ if(!dev.lock){dev.lock=true;saveDev();sel.role=eff();toast('Locked: staff mode ON');refreshAll();if(window.BS_goMenu)setTimeout(window.BS_goMenu,800);return}
+ if(dev.pin)B.pinAsk('Owner PIN','Enter your 4-digit PIN',off);else off()};
 B.role=()=>eff();B.staffPages=[0,2];
 B.unlockOwner=cb=>{if(real!=='Owner')return toast('Staff accounts cannot open this page.','err');
  const off=()=>{dev.lock=false;saveDev();view=null;sel.role=eff();toast('Unlocked: owner mode');refreshAll();if(cb)cb()};
- if(dev.pin)ask('Owner PIN',[{l:'Enter your 4-digit PIN to leave staff mode',t:'password'}],async v=>{(await sha(v[0]))===dev.pin?off():toast('Wrong PIN','err')});else off()};
+ if(dev.pin)B.pinAsk('Owner PIN','Enter your 4-digit PIN to leave staff mode',off);else off()};
 function confirmBox(msg,yes,label){const f=$('#mf');f.innerHTML=`<h2>Please confirm</h2><p style="line-height:1.4;color:#cfe0ff">${esc(msg)}</p><div class="b"><button type="button" id="qc">Cancel</button><button class="p">${esc(label||'Yes, continue')}</button></div>`;$('#md').classList.add('on');$('#qc').onclick=()=>$('#md').classList.remove('on');f.onsubmit=e=>{e.preventDefault();$('#md').classList.remove('on');yes()}}
 B.confirm=confirmBox;
 
@@ -475,7 +499,13 @@ function authErr(e){const c=(e&&e.code)||'';
  if(/popup-closed|cancelled/.test(c))return'Sign-in was cancelled.';
  if(c==='permission-denied')return'Database rules block this. Publish firestore.rules (see README).';
  return(e&&e.message)?e.message.replace(/^Firebase:\s*/,''):'Something went wrong. Try again.'}
-const imgToData=(file,max,type,q)=>new Promise((res,rej)=>{const r=new FileReader();r.onerror=rej;r.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL(type,q))};im.src=r.result};r.readAsDataURL(file)});
+const imgToData=(file,max,type,q)=>new Promise((res,rej)=>{const r=new FileReader();r.onerror=()=>rej(r.error||new Error('read'));
+ r.onload=()=>{let raw=String(r.result||'');if(!/^data:image\//.test(raw)){const b64=raw.split(',')[1]||'';raw='data:'+(file.type&&/^image\//.test(file.type)?file.type:'image/jpeg')+';base64,'+b64}
+  const draw=im=>{try{const w=im.naturalWidth||im.width,h=im.naturalHeight||im.height,k=Math.min(1,max/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*k));c.height=Math.max(1,Math.round(h*k));c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL(type,q)}catch(e){return null}};
+  const keep=()=>file.size<8e6?res(raw):rej(new Error('too big'));
+  const im=new Image();im.onload=()=>{const d=draw(im);d?res(d):keep()};
+  im.onerror=()=>{if(window.createImageBitmap){createImageBitmap(file).then(bm=>{const d=draw(bm);d?res(d):keep()},keep)}else keep()};
+  im.src=raw};r.readAsDataURL(file)});
 const hhmm=t=>new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 const fdt=t=>new Date(t).toLocaleString([],{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 
@@ -740,8 +770,9 @@ const bt=()=>Math.max(3,parseFloat(BTN[ui.btn]||'3.25rem')),gp=()=>ui.dens==='co
 function pack(title,blocks){const budget=Math.max(6,$('#shBody').clientHeight/remPx()-2.4),out=[];let c=[],used=0;
  for(const[h,html]of blocks){if(c.length&&used+h>budget){out.push(c);c=[];used=0}c.push(html);used+=h}
  if(c.length)out.push(c);return out.map(x=>`<h3>${esc(title)}</h3>${x.join('')}`)}
-const SECS=()=>[['display','Display'],['account','Account'],['shop','Shop and logo'],['sync','Sync'],...(real==='Owner'&&prof?[['team','Team']]:[]),['drive','Google Drive'],['articles','Saved articles'],['expenses','Expenses added'],...(real==='Owner'?[['removed','Recently removed']]:[])];
+const SECS=()=>[['display','Display'],['account','Account'],['shop','Shop and logo'],['sync','Sync'],...(real==='Owner'&&prof?[['team','Team']]:[]),['drive','Google Drive'],['articles','Saved articles'],['expenses','Expenses added'],...(real==='Owner'?[['removed','Recently removed'],['reset','Reset data']]:[])];
 const SEC={
+ reset(){const ok=real==='Owner'&&!dev.lock&&!view,dis=ok?'':'disabled';return pack('Reset data',[[5,`<p>Owner only. Each reset asks for your PIN first.${dev.pin?'':' <b>Set an owner PIN first.</b>'}</p>`],[ht(),`<div class="row"><button type="button" class="bt d" data-act="resetSales" ${dis}>Reset sales summary</button></div>`],[ht(),`<div class="row"><button type="button" class="bt d" data-act="resetStock" ${dis}>Reset stock</button></div>`],[ht(),`<div class="row"><button type="button" class="bt" data-act="changePin" ${dis}>Change owner PIN / forgot PIN</button></div>`]])},
  display(){const g=gp(),h=hs();return pack('Display',[
   [1.5+3+g,`<div><label>Font size <b id="fsv">${ui.fs}%</b></label><input type="range" min="80" max="150" step="5" value="${ui.fs}" data-act="fs" aria-label="Font size"></div>`],
   [h,`<div><label>Text scale</label>${seg('scale',ui.scale,[['small','Small'],['medium','Medium'],['large','Large']])}</div>`],
@@ -792,6 +823,7 @@ function openSheet(sec){shD.shop=Object.assign({},settings);$('#sheet').hidden=f
 function panelSync(){const e=$('#syncTxt');if(e)e.textContent=syncLabel+(lastSync?' (last synced '+fdt(lastSync)+')':'')}
 const setUI=(k,v)=>{ui[k]=v;saveUI();applyUI();shRender()};
 const ACT={
+ resetSales(){B.resetData('sales')},resetStock(){B.resetData('stock')},changePin(){B.pinSetup()},
  fs(el){ui.fs=+el.value;saveUI();applyUI();shRender()},
  scale(el){setUI('scale',el.dataset.v)},btn(el){setUI('btn',el.dataset.v)},dens(el){setUI('dens',el.dataset.v)},
  orient(el){setUI('orient',el.dataset.v);toast(el.dataset.v==='auto'?'Orientation: auto':'Orientation locked: '+el.dataset.v,'')},
@@ -1422,7 +1454,7 @@ const SC=[
 [{l:'Owner',b:[320,765,498,836],g:'role',v:'Owner',f:()=>BS.setView('Owner')},{l:'Staff',b:[523,765,670,836],g:'role',v:'Staff',f:()=>BS.setView('Staff')},{l:'Partner view-only',b:[693,765,1105,836],g:'role',v:'Partner',f:()=>BS.setView('Partner')},
  {l:'English',b:[360,1120,577,1225],g:'lang',v:'English'},{l:'Urdu',b:[600,1120,735,1225],g:'lang',v:'Urdu',f:()=>toast('اردو منتخب ہو گئی')},
  {l:'Upload shop logo',o:1,b:[806,898,1112,1266],f:()=>$('#logo').click()},
- {l:'Change owner PIN',o:1,b:[320,1308,1118,1510],f:()=>ask('Owner PIN',[{l:'New 4-digit PIN',t:'password'}],v=>{if(/^\d{4}$/.test(v[0])){BS.setPin(v[0])}else toast('PIN must be 4 digits')})},
+ {l:'Change owner PIN',o:1,b:[320,1308,1118,1510],f:()=>BS.pinSetup()},
  {l:'Lock or staff mode',b:[868,1590,1073,1708],f:()=>BS.toggleLock()},
  {l:'Copy backup',o:1,b:[348,1810,703,1925],f:()=>{const t=BS.backupJSON();(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Backup copied'),()=>toast('Could not copy. Try again.'))}},
  {l:'Restore',o:1,b:[735,1810,1090,1925],f:()=>ask('Restore backup',[{l:'Paste backup',t:'area'}],v=>{let d;try{d=JSON.parse(v[0]);if(!d||typeof d!=='object'||Array.isArray(d))throw 0}catch(e){return toast('Backup text is not valid')}BS.confirm('Restore this backup? Your current data will be replaced. Old records are kept as soft-deleted, not erased.',()=>{BS.cloud.restoreAll(d).then(()=>toast('Backup restored'),()=>toast('Restore failed'))})})}]];
@@ -1471,7 +1503,10 @@ function paint4(){const s=lastSale();
  const pill=(box,txt,fn,lbl)=>{const e=ov(box,`<button type="button" class="pk" aria-label="${lbl}" style="font-size:${F(30)}">${txt}</button>`,{alignItems:'center',justifyContent:'center'});e.querySelector('button').onclick=fn};
  pill([498,356,598,424],'Scan',()=>scanBarcode(c=>{const r=findByCode(String(c).trim());pickSale(r?r.a.no:String(c).trim())}),'Scan an article barcode to find its sale');
  pill([608,356,818,424],'Choose sale',()=>pickSale(),'Which sale is being returned?')}
-function paint(){const st=$('#st');if(!st)return;st.querySelectorAll('.ov').forEach(e=>e.remove());const P=[paint0,paint1,paint2,paint3,paint4][cur];if(P)P()}
+window.__kp=window.__kp==null?null:window.__kp;
+function paint5(){const r=BS.role(),pos=r==='Staff'?2:r==='Partner'?1:0,L=['3%','25%','47%'],e=ov([598,1214,818,1346],`<div class="kt p${pos}"><i class="kn" style="left:${L[window.__kp==null?pos:window.__kp]}"></i></div>`,{alignItems:'center'}),kn=e.querySelector('.kn');
+ if(window.__kp!=null&&window.__kp!==pos)requestAnimationFrame(()=>requestAnimationFrame(()=>{kn.style.left=L[pos]}));window.__kp=pos}
+function paint(){const st=$('#st');if(!st)return;st.querySelectorAll('.ov').forEach(e=>e.remove());const P=[paint0,paint1,paint2,paint3,paint4,paint5][cur];if(P)P()}
 window.BS_live=()=>{if($('#md').classList.contains('on'))return;const a=document.activeElement;if(a&&a.classList&&a.classList.contains('hs')){paint();return}render()};
 
 function render(){setTimeout(()=>{try{cartFab()}catch(e){}},0);const st=$('#st');st.style.aspectRatio=(CR[cur][2]-CR[cur][0])+'/'+(CR[cur][3]-CR[cur][1]);st.innerHTML=`<img src="${IMGS[cur]}" alt="${NAMES[cur]} screen of the Brother Shoes app" draggable="false">`;
