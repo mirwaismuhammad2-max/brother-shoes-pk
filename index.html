@@ -285,6 +285,11 @@ html,body{background:#06112a!important;color-scheme:dark}
 #stk{position:fixed;inset:0;z-index:60;background:rgba(5,10,24,.98);color:#e8f0ff;display:none;overflow-y:auto;padding:.8rem;font:15px system-ui}#stk.on{display:block}#stk .w{max-width:34rem;margin:0 auto}#stk button{border:0;border-radius:99px;min-height:42px;padding:0 14px;background:#1a2a48;color:#fff;font:inherit}#stk button.p{background:linear-gradient(135deg,#2f7bff,#12c39a);font-weight:600}#stk button.dg{background:#6a2433}#stk .rw{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.4rem 0;border-top:1px solid #243558}#stk small{color:#9fb4dc}#stk h3{margin:1rem 0 .2rem}
 #rp{position:fixed;inset:0;z-index:60;background:rgba(5,10,24,.98);color:#e8f0ff;display:none;overflow-y:auto;padding:.8rem;font:15px system-ui}#rp.on{display:block}#rp .w{max-width:34rem;margin:0 auto}#rp button{border:0;border-radius:99px;min-height:42px;padding:0 14px;background:#1a2a48;color:#fff;font:inherit}#rp button.p{background:linear-gradient(135deg,#2f7bff,#12c39a);font-weight:600}#rp button:disabled{opacity:.35}#rp .rw{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.35rem 0;border-top:1px solid #243558}#rp .rw span,#rp .rw small:first-child{flex:1;min-width:0}#rp .rw b,#rp .rw small:last-child{text-align:right}#rp small{color:#9fb4dc}#rp h3{margin:1.1rem 0 .1rem;color:#12c39a}#rp .tb{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
 #mn{position:fixed;inset:0;z-index:36;background:linear-gradient(#b9c0c9,#a0a8b3);display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}#mn.on{display:block}#mn .mw{position:relative;max-width:520px;margin:0 auto}#mn img{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}#mn .mh{position:absolute;background:transparent;border:0;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:28px}#mn .mh:focus-visible{outline:3px solid #fff}#mn .mx{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:10px;z-index:2;width:38px;height:38px;border-radius:50%;border:0;background:rgba(0,0,0,.35);color:#fff;font-size:18px}#mq{position:fixed;inset:0;z-index:38;background:rgba(5,10,24,.7);display:none;align-items:center;justify-content:center;padding:1rem}#mq.on{display:flex}#mq .mc{background:#14203a;color:#e8f0ff;border-radius:18px;padding:1.2rem;width:100%;max-width:26rem;font:16px system-ui}#mq h2{margin:0 0 .6rem;font-size:1.2rem}#mq label{display:block;margin-bottom:.3rem;color:#9fb4dc}#mq input{width:100%;box-sizing:border-box;min-height:48px;border-radius:12px;border:1px solid #2c4170;background:#0c1630;color:#fff;font:inherit;padding:0 .8rem}#mq .mb{display:flex;gap:.6rem;margin-top:1rem;justify-content:flex-end}#mq button{border:0;border-radius:99px;min-height:44px;padding:0 18px;background:#1a2a48;color:#fff;font:inherit}#mq button.p{background:linear-gradient(135deg,#2f7bff,#12c39a);font-weight:600}
+#mn .mh.lk{background:rgba(6,17,42,.6);box-shadow:inset 0 0 0 2px rgba(255,255,255,.28)}#mn .mh.lk::after{content:"\1F512";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px}
+#mq .scn{width:100%;margin-top:.7rem;background:rgba(47,123,255,.22)!important;border:1px solid rgba(120,170,255,.6)!important}
+#md .rsr{display:flex;gap:.5rem;align-items:stretch}#md .rsr input{flex:1;min-width:0}#md .rsr button{flex:none;padding:0 1.1rem;border-radius:.9rem;border:1px solid var(--line);background:var(--pill);color:var(--pillfg)}
+.ov .pk{pointer-events:auto;border:0;border-radius:99px;padding:.25em .9em;background:linear-gradient(135deg,#2f7bff,#12c39a);color:#fff;font-weight:700;white-space:nowrap;cursor:pointer;font-family:inherit}
+#st .hs.lg{z-index:6}
 </style>
 </head><body>
 <div id="boot"><img src="logo.png" alt="Brother Shoes"><p>BROTHER SHOES</p></div>
@@ -438,14 +443,18 @@ B.can=(a,silent)=>{const r=eff();let ok=true,why='Not allowed';
 B.setView=r=>{const rank={Owner:3,Staff:2,Partner:1};
  if(rank[r]>rank[real]){toast('Only the owner can switch to '+r+' mode. Your account is '+real+'.','err');sel.role=eff();return}
  view=(r===real)?null:r;sel.role=eff();
- toast(r==='Owner'?'Owner mode: full access':r==='Staff'?'Staff mode: no buying price, profit or refunds':'Partner mode: view only, no changes');
- refreshAll()};
+ toast(r==='Owner'?'Owner mode: full access':r==='Staff'?'Staff mode: Find / Sell and Sales only, no buying price or profit':'Partner mode: view only, no changes');
+ refreshAll();if(eff()==='Staff'&&window.BS_goMenu)window.BS_goMenu()};
 const sha=async s=>{try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('bs:'+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){let h=5381;for(const c of 'bs:'+s)h=((h<<5)+h+c.charCodeAt(0))|0;return 'x'+h}};
 B.setPin=async v=>{dev.pin=await sha(v);saveDev();toast('PIN saved on this phone')};
 B.toggleLock=()=>{if(real!=='Owner')return toast('Only the owner can use lock mode.','err');
  const off=()=>{dev.lock=false;saveDev();sel.role=eff();toast('Unlocked: owner mode');refreshAll()};
- if(!dev.lock){dev.lock=true;saveDev();sel.role=eff();toast('Locked: staff mode ON');refreshAll();return}
+ if(!dev.lock){dev.lock=true;saveDev();sel.role=eff();toast('Locked: staff mode ON');refreshAll();if(window.BS_goMenu)window.BS_goMenu();return}
  if(dev.pin)ask('Owner PIN',[{l:'Enter your 4-digit PIN',t:'password'}],async v=>{(await sha(v[0]))===dev.pin?off():toast('Wrong PIN','err')});else off()};
+B.role=()=>eff();B.staffPages=[0,2];
+B.unlockOwner=cb=>{if(real!=='Owner')return toast('Staff accounts cannot open this page.','err');
+ const off=()=>{dev.lock=false;saveDev();view=null;sel.role=eff();toast('Unlocked: owner mode');refreshAll();if(cb)cb()};
+ if(dev.pin)ask('Owner PIN',[{l:'Enter your 4-digit PIN to leave staff mode',t:'password'}],async v=>{(await sha(v[0]))===dev.pin?off():toast('Wrong PIN','err')});else off()};
 function confirmBox(msg,yes,label){const f=$('#mf');f.innerHTML=`<h2>Please confirm</h2><p style="line-height:1.4;color:#cfe0ff">${esc(msg)}</p><div class="b"><button type="button" id="qc">Cancel</button><button class="p">${esc(label||'Yes, continue')}</button></div>`;$('#md').classList.add('on');$('#qc').onclick=()=>$('#md').classList.remove('on');f.onsubmit=e=>{e.preventDefault();$('#md').classList.remove('on');yes()}}
 B.confirm=confirmBox;
 
@@ -982,9 +991,18 @@ function saveArt(){if(!BS.can('write'))return;if(!(val.no||'').trim())return toa
 let retSale=null,LBI=[],LBS=[50,30];
 function openSales(){const done=new Set(S.rets.map(r=>r.saleId).filter(Boolean));return S.sales.filter(s=>!s.deleted&&!done.has(s.id)).sort((a,b)=>(b.t||0)-(a.t||0))}
 function lastSale(){const l=openSales();return(retSale&&l.find(s=>s.id===retSale))||l[0]||null}
-function pickSale(){const l=openSales().slice(0,30);if(!l.length)return toast('No sale to return yet');
+function pickSale(pre){const all=openSales().slice(0,300);if(!all.length)return toast('No sale to return yet');
  const lab=s=>new Date(s.t).toLocaleString([],{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})+' \u00b7 '+s.a+' / size '+s.s+' / '+fmt(s.p)+(s.c?' \u00b7 '+s.c:'');
- ask('Which sale is being returned?',[{l:'Recent sales (newest first)',o:l.map(lab)}],v=>{const s=l.find(x=>lab(x)===v[0]);if(s){retSale=s.id;toast('Selected: '+lab(s));render()}})}
+ const f=$('#mf');
+ f.innerHTML='<h2>Which sale is being returned?</h2><label for="rq">Search by article number</label><div class="rsr"><input id="rq" type="search" autocomplete="off" placeholder="Type or scan article number"><button type="button" id="rqs">Scan</button></div><label for="rl">Sales found (newest first)</label><select id="rl"></select><div class="b"><button type="button" id="qc">Cancel</button><button class="p">OK</button></div>';
+ const sl=$('#rl'),inp=$('#rq');let sh=[];
+ const fill=()=>{const q=inp.value.trim().toLowerCase();sh=all.filter(s=>!q||String(s.a).toLowerCase().includes(q)||String(s.c||'').toLowerCase().includes(q)).slice(0,60);
+  sl.innerHTML=sh.length?sh.map((s,i)=>'<option value="'+i+'"'+(s.id===retSale?' selected':'')+'>'+esc2(lab(s))+'</option>').join(''):'<option value="">No sale found for this article</option>'};
+ inp.value=typeof pre==='string'?pre:'';fill();inp.oninput=fill;
+ $('#rqs').onclick=()=>scanBarcode(c=>{const r=findByCode(String(c).trim());inp.value=r?r.a.no:String(c).trim();fill()});
+ $('#md').classList.add('on');$('#qc').onclick=()=>$('#md').classList.remove('on');
+ f.onsubmit=e=>{e.preventDefault();const s=sh[+sl.value];if(!s)return toast('No sale selected','err');$('#md').classList.remove('on');retSale=s.id;toast('Selected: '+lab(s));render()};
+ try{fitModal()}catch(e){}}
 function confirmRet(){if(!BS.can('write'))return;const ls=lastSale();if(!ls)return toast('No sale to return yet');
  const it=ls.aid?S.items.find(x=>x.id===ls.aid):null,ob=it?+it.buy||0:0,cr=ls.m==='Credit',who=(ls.c||'').trim()||'Customer';
  const base=o=>Object.assign({id:BS.id(),t:Date.now(),by:BS.uid(),saleId:ls.id,aid:ls.aid||'',article:ls.a,oldSize:ls.s,v:2,cash:0,cr:0,td:0,pd:0,restock:true},o);
@@ -1091,7 +1109,7 @@ const rpRange=()=>{const a=new Date(rpD);a.setHours(0,0,0,0);if(rpMode==='month'
 const rpLabel=()=>rpD.toLocaleDateString([],rpMode==='month'?{month:'long',year:'numeric'}:{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 function rpEvents(){const ev=[];
  S.items.filter(x=>!x.deleted).forEach(a=>(a.hist||[]).forEach(h=>{if(h.s&&h.d)ev.push({t:h.t||0,k:h.d>0?'add':'del',n:h.d,a:a.no,s:h.s,by:h.by,note:h.n})}));
- S.sales.filter(s=>!s.deleted).forEach(s=>ev.push({t:s.t||0,k:'sale',n:-1,a:s.a,s:s.s,p:s.p,m:s.m,c:s.c,by:s.by}));
+ S.sales.filter(s=>!s.deleted).forEach(s=>ev.push({t:s.t||0,k:'sale',n:-1,a:s.a,s:s.s,p:s.p,m:s.m,c:s.c,by:s.by,sid:s.id}));
  S.rets.forEach(r=>{if(r.kind==='exchange-same')return;if(r.restock!==false)ev.push({t:r.t||0,k:'ret',n:1,a:r.article,s:r.oldSize,by:r.by});
   if(r.kind==='exchange-different'&&r.newAid&&r.newSize)ev.push({t:r.t||0,k:'exo',n:-1,a:r.newArticle,s:r.newSize,by:r.by})});
  return ev}
@@ -1100,6 +1118,7 @@ function rpMoney(t0,t1){const done=new Set(S.rets.filter(r=>r.kind==='refund'&&r
  S.credits.forEach(c=>{if(!c.deleted&&c.kind==='received'&&c.t>=t0&&c.t<t1)cash+=+c.amt||0});
  S.rets.forEach(r=>{if(!r.v||r.t<t0||r.t>=t1)return;ret+=r.td||0;cash+=r.cash||0;cred+=r.cr||0;profit+=r.pd||0});
  return{gross,ret,net:gross+ret,cash,cred,pairs,profit,ex:S.expl.filter(x=>!x.deleted&&x.t>=t0&&x.t<t1).reduce((t,x)=>t+(+x.amt||0),0)}}
+function rxTxt(id){const r=id&&S.rets.find(x=>x.saleId===id);if(!r)return'';return r.kind==='refund'?' (refunded)':r.kind==='exchange-same'?' (replaced by size '+r.newSize+')':' (replaced by '+r.newArticle+(r.newSize?' size '+r.newSize:'')+')'}
 function rpRows(det){const[t0,t1]=rpRange(),m=rpMoney(t0,t1),ev=rpEvents(),inP=ev.filter(e=>e.t>=t0&&e.t<t1),af=ev.filter(e=>e.t>=t1),sm=l=>l.reduce((t,e)=>t+e.n,0),
  cnt=S.items.filter(x=>!x.deleted).reduce((t,a)=>t+Object.values(qmap(a)).reduce((u,v)=>u+(+v||0),0),0),close=cnt-sm(af),open=close-sm(inP),by=k=>inP.filter(e=>e.k===k),pr=l=>Math.abs(sm(l)),
  nm=id=>(BS.nameOf&&BS.nameOf(id))||'',fd=t=>new Date(t).toLocaleString([],{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}),sr=l=>l.slice().sort((a,b)=>a.t-b.t),R=[];
@@ -1110,9 +1129,9 @@ function rpRows(det){const[t0,t1]=rpRange(),m=rpMoney(t0,t1),ev=rpEvents(),inP=e
  R.push(['h','Audit']);if(rm.length)rm.forEach(x=>R.push(['t',x,'']));else R.push(['t','No records removed in this period','']);
  const old=S.items.filter(x=>!x.deleted&&!x.hist).length;if(old)R.push(['t',old+' older article(s) have no addition history. Their first stock is not itemized.','']);
  if(det){R.push(['h','Stock added and deleted']);const A=sr(by('add').concat(by('del')));if(A.length)A.forEach(e=>R.push(['t',fd(e.t)+' \u00b7 '+(e.n>0?'+':'')+e.n+' size '+e.s+' \u00b7 '+e.a,nm(e.by)||e.note||'']));else R.push(['t','None','']);
-  R.push(['h','Sales']);const Sa=sr(by('sale'));if(Sa.length)Sa.forEach(e=>R.push(['t',fd(e.t)+' \u00b7 '+e.a+' size '+e.s+' \u00b7 '+e.m+(e.c?' ('+e.c+')':''),fmt(e.p)+(nm(e.by)?' \u00b7 '+nm(e.by):'')]));else R.push(['t','None','']);
+  R.push(['h','Sales']);const Sa=sr(by('sale'));if(Sa.length)Sa.forEach(e=>R.push(['t',fd(e.t)+' \u00b7 '+e.a+' size '+e.s+rxTxt(e.sid)+' \u00b7 '+e.m+(e.c?' ('+e.c+')':''),fmt(e.p)+(nm(e.by)?' \u00b7 '+nm(e.by):'')]));else R.push(['t','None','']);
   R.push(['h','Returns and exchanges']);const Rt=S.rets.filter(r=>r.t>=t0&&r.t<t1).sort((a,b)=>a.t-b.t);
-  if(Rt.length)Rt.forEach(r=>R.push(['t',fd(r.t)+' \u00b7 '+(r.kind==='refund'?'Refund ':r.kind==='exchange-same'?'Size exchange ':'Exchange ')+r.article+(r.oldSize?' size '+r.oldSize:''),r.v?fmt(r.td||0):(r.amt?'-'+fmt(r.amt):'')]));else R.push(['t','None','']);}
+  if(Rt.length)Rt.forEach(r=>R.push(['t',fd(r.t)+' \u00b7 '+(r.kind==='refund'?'Refund ':r.kind==='exchange-same'?'Size exchange ':'Exchange ')+r.article+(r.oldSize?' size '+r.oldSize:'')+(r.kind==='exchange-same'?' replaced by size '+r.newSize:r.kind==='exchange-different'?' replaced by '+r.newArticle+(r.newSize?' size '+r.newSize:''):''),r.v?fmt(r.td||0):(r.amt?'-'+fmt(r.amt):'')]));else R.push(['t','None','']);}
  return R}
 function rpDraw(){const el=$('#rp'),rows=rpRows(rpDet),[,t1]=rpRange();
  el.innerHTML=`<div class="w"><div class="rw" style="border:0"><b style="font-size:19px">Stock and sales records</b><button data-r="x">Close</button></div><div class="tb"><button class="${rpMode==='day'?'p':''}" data-r="day">Daily</button><button class="${rpMode==='month'?'p':''}" data-r="month">Monthly</button></div><div class="rw"><button data-r="prev">\u2039</button><b>${esc2(rpLabel())}</b><button data-r="next" ${t1>Date.now()?'disabled':''}>\u203a</button></div>`+
@@ -1142,8 +1161,8 @@ function navPush(){if(!navIn){history.pushState({bs:1},'');navIn=true}}
 function navPop(){if(navIn){navIn=false;navSkip=true;history.back()}}
 const mnHide=()=>{const m=$('#mn');if(m)m.classList.remove('on');navPush()};
 function mqOpen(){navPush();let q=$('#mq');if(!q){q=document.createElement('div');q.id='mq';
-  q.innerHTML='<form class="mc"><h2>Find / Sell</h2><label for="mqi">Search Article or Brand</label><input id="mqi" type="search" autocomplete="off" placeholder="Search Article or Brand"><div class="mb"><button type="button" data-q="x">Cancel</button><button type="submit" class="p">Search</button></div></form>';document.body.appendChild(q);
-  q.addEventListener('click',e=>{if(e.target===q||e.target.dataset.q==='x'){q.classList.remove('on');navPop()}});
+  q.innerHTML='<form class="mc"><h2>Find / Sell</h2><label for="mqi">Search Article or Brand</label><input id="mqi" type="search" autocomplete="off" placeholder="Search Article or Brand"><button type="button" class="scn" data-q="scan">Scan barcode</button><div class="mb"><button type="button" data-q="x">Cancel</button><button type="submit" class="p">Search</button></div></form>';document.body.appendChild(q);
+  q.addEventListener('click',e=>{if(e.target.dataset&&e.target.dataset.q==='scan'){scanBarcode(code=>{const c=String(code).trim(),f=findByCode(c);if(f){q.classList.remove('on');mnHide();selectArt(f.a.id,f.size)}else{$('#mqi').value=c;toast('No saved article has this barcode. Type the article number instead.','err')}});return}if(e.target===q||e.target.dataset.q==='x'){q.classList.remove('on');navPop()}});
   q.querySelector('form').addEventListener('submit',e=>{e.preventDefault();const v=$('#mqi').value.trim();if(!v)return toast('Type an article or brand','err');q.classList.remove('on');mnHide();val.q=v;go(0)})}
  $('#mqi').value='';q.classList.add('on');setTimeout(()=>$('#mqi').focus(),60)}
 function BS_menu(){let m=$('#mn');if(!m){m=document.createElement('div');m.id='mn';
@@ -1151,8 +1170,9 @@ function BS_menu(){let m=$('#mn');if(!m){m=document.createElement('div');m.id='m
    MENU_BOX.map(([k,b,l])=>'<button type="button" class="mh" data-m="'+k+'" aria-label="'+l+'" style="left:'+(b[0]/14.38).toFixed(2)+'%;top:'+(b[1]/25.76).toFixed(2)+'%;width:'+((b[2]-b[0])/14.38).toFixed(2)+'%;height:'+((b[3]-b[1])/25.76).toFixed(2)+'%"></button>').join('')+'</div>';
   document.body.appendChild(m);
   m.addEventListener('click',e=>{const t=e.target.closest('[data-m]');if(!t)return;const k=t.dataset.m;if(k==='x'){mnHide();return}if(k==='find'){mqOpen();return}
+   if(BS.role()==='Staff'&&k!=='sales'){if(k==='setting'){BS.unlockOwner(()=>{mnHide();go(5)});return}toast('Staff mode: you can only use Find / Sell and Sales.','err');return}
    mnHide();if(k==='refund')go(4);else if(k==='stock')go(1);else if(k==='sales')go(2);else if(k==='ledger')go(3);else if(k==='setting')go(5);else if(k==='labels')openLabels()})}
- m.classList.add('on');m.scrollTop=0}
+ m.classList.add('on');m.scrollTop=0;const stf=BS.role()==='Staff';m.querySelectorAll('.mh').forEach(b=>b.classList.toggle('lk',stf&&['refund','stock','ledger','setting','labels'].includes(b.dataset.m)))}
 window.BS_menu=BS_menu;
 /* ---------- back navigation: on-screen back button and the phone's back button go to the main menu ---------- */
 const isOn=s=>{const e=$(s);return !!e&&e.classList.contains('on')};
@@ -1398,7 +1418,7 @@ const SC=[
  {l:'Payment history: open Return / Exchange',b:[345,1810,740,1880],f:()=>go(4)},
  {l:'Add bill or payment',w:1,b:[983,1920,1133,2070],f:openSupAcc}],
 [{l:'Same article, other size',b:[330,1043,593,1373],g:'ex',v:'Same'},{l:'Different article',b:[622,1043,874,1373],g:'ex',v:'Different'},{l:'Cash refund',b:[903,1043,1153,1373],g:'ex',v:'Cash'},
- {l:'New size',w:1,b:[810,1448,1088,1530],in:'ns',ph:'e.g., 40'},{l:'New article number',w:1,b:[810,1596,1088,1676],in:'na',ph:'e.g., 12345'},{l:'New price',w:1,b:[810,1742,1088,1822],in:'np',n:1,ph:'Rs 0'},{l:'Confirm',w:1,b:[330,1897,1108,2030],f:confirmRet},{l:'Choose another sale to return',b:[95,438,800,502],f:pickSale}],
+ {l:'New size',w:1,b:[810,1448,1088,1530],in:'ns',ph:'e.g., 40'},{l:'New article number',w:1,b:[810,1596,1088,1676],in:'na',ph:'e.g., 12345'},{l:'New price',w:1,b:[810,1742,1088,1822],in:'np',n:1,ph:'Rs 0'},{l:'Confirm',w:1,b:[330,1897,1108,2030],f:confirmRet}],
 [{l:'Owner',b:[320,765,498,836],g:'role',v:'Owner',f:()=>BS.setView('Owner')},{l:'Staff',b:[523,765,670,836],g:'role',v:'Staff',f:()=>BS.setView('Staff')},{l:'Partner view-only',b:[693,765,1105,836],g:'role',v:'Partner',f:()=>BS.setView('Partner')},
  {l:'English',b:[360,1120,577,1225],g:'lang',v:'English'},{l:'Urdu',b:[600,1120,735,1225],g:'lang',v:'Urdu',f:()=>toast('اردو منتخب ہو گئی')},
  {l:'Upload shop logo',o:1,b:[806,898,1112,1266],f:()=>$('#logo').click()},
@@ -1407,7 +1427,8 @@ const SC=[
  {l:'Copy backup',o:1,b:[348,1810,703,1925],f:()=>{const t=BS.backupJSON();(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Backup copied'),()=>toast('Could not copy. Try again.'))}},
  {l:'Restore',o:1,b:[735,1810,1090,1925],f:()=>ask('Restore backup',[{l:'Paste backup',t:'area'}],v=>{let d;try{d=JSON.parse(v[0]);if(!d||typeof d!=='object'||Array.isArray(d))throw 0}catch(e){return toast('Backup text is not valid')}BS.confirm('Restore this backup? Your current data will be replaced. Old records are kept as soft-deleted, not erased.',()=>{BS.cloud.restoreAll(d).then(()=>toast('Backup restored'),()=>toast('Restore failed'))})})}]];
 function ring(){document.querySelectorAll('#st .hs[data-g]').forEach(e=>e.classList.toggle('sel',!!e.dataset.g&&sel[e.dataset.g]==e.dataset.v))}
-function go(n){cur=n;render();scrollTo(0,0)}
+function go(n){if(BS.role()==='Staff'&&!BS.staffPages.includes(n)){if(n===5){BS.unlockOwner(()=>go(5));return}toast('Staff mode: you can only use Find / Sell and Sales.','err');return}
+ cur=n;render();scrollTo(0,0)}
 
 /* ---------- live text drawn on top of the cleaned pictures ---------- */
 const FB={"0:q": "linear-gradient(#658cb3,#638db3)", "1:no": "linear-gradient(#333c53,#303951)", "1:brand": "linear-gradient(#2e354e,#29314a)", "1:color": "linear-gradient(#365c7a,#345b79)", "1:buy": "linear-gradient(#1d2942,#1c263f)", "1:tag": "linear-gradient(#213f5d,#1f3754)", "1:min": "linear-gradient(#19233c,#192843)", "4:ns": "linear-gradient(#3e4456,#464f60)", "4:na": "linear-gradient(#3e4455,#454d5e)", "4:np": "linear-gradient(#3d4354,#454c5e)"};
@@ -1445,7 +1466,11 @@ function paint3(){const cs=custs();
  const p=S.sup.filter(r=>!r.deleted&&r.type!=='New bill').sort((x,y)=>(y.t||0)-(x.t||0))[0];
  ov([74,1566,700,1670],p?`<span class="hd" style="font-size:${F(34)}">${new Date(p.t||Date.now()).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</span><i class="dot"></i><span class="hx" style="font-size:${F(34)}">${p.supplier?esc2(p.supplier)+': ':''}Paid${p.note?' to '+esc2(p.note):''}${p.bill?' (bill '+esc2(p.bill)+')':''} - ${fmt(p.amt)}</span>`:`<span class="hint" style="font-size:${F(32)}">No payments yet</span>`,{alignItems:'center',gap:F(18)})}
 function paint4(){const s=lastSale();
- ov([95,438,800,502],s?`<span style="font-size:${F(54)}"><b>${esc2(s.a)}</b> / <b class="bl">size ${esc2(s.s)}</b> / <b class="bl">${fmt(s.p)}</b></span>`:`<span class="hint" style="font-size:${F(40)}">No sale to return yet</span>`,{alignItems:'center'},'orig')}
+ const tx=s?s.a+' / size '+s.s+' / '+fmt(s.p):'';
+ ov([95,438,800,502],s?`<span style="font-size:${fitF(tx,675,54)};white-space:nowrap"><b>${esc2(s.a)}</b> / <b class="bl">size ${esc2(s.s)}</b> / <b class="bl">${fmt(s.p)}</b></span>`:`<span class="hint" style="font-size:${F(40)}">No sale to return yet</span>`,{alignItems:'center'},'orig');
+ const pill=(box,txt,fn,lbl)=>{const e=ov(box,`<button type="button" class="pk" aria-label="${lbl}" style="font-size:${F(30)}">${txt}</button>`,{alignItems:'center',justifyContent:'center'});e.querySelector('button').onclick=fn};
+ pill([498,356,598,424],'Scan',()=>scanBarcode(c=>{const r=findByCode(String(c).trim());pickSale(r?r.a.no:String(c).trim())}),'Scan an article barcode to find its sale');
+ pill([608,356,818,424],'Choose sale',()=>pickSale(),'Which sale is being returned?')}
 function paint(){const st=$('#st');if(!st)return;st.querySelectorAll('.ov').forEach(e=>e.remove());const P=[paint0,paint1,paint2,paint3,paint4][cur];if(P)P()}
 window.BS_live=()=>{if($('#md').classList.contains('on'))return;const a=document.activeElement;if(a&&a.classList&&a.classList.contains('hs')){paint();return}render()};
 
@@ -1457,6 +1482,7 @@ function render(){setTimeout(()=>{try{cartFab()}catch(e){}},0);const st=$('#st')
   else{e.type='button';const v0=h.vf?h.vf():h.v;e.dataset.g=h.g||'';e.dataset.v=v0||'';e.onclick=()=>{if(h.w&&!BS.can('write'))return;if(h.o&&!BS.can('owner'))return;if(h.p&&!BS.can('profit'))return;if(h.g)sel[h.g]=h.vf?h.vf():h.v;h.f&&h.f();ring()}}
   st.appendChild(e)};
  SC[cur].forEach(mk);TX.forEach(([a,c,n],i)=>mk({l:TL[i]+' tab',b:[a,TY[cur][0],c,TY[cur][1]],f:()=>go(n)}));
+ {const lg=document.createElement('button');lg.type='button';lg.className='hs lg';lg.setAttribute('aria-label','Brother Shoes: open main menu');Object.assign(lg.style,{left:'1%',top:'0.5%',width:'36%',height:'9.5%'});lg.onclick=()=>{if(window.BS_goMenu)window.BS_goMenu()};st.appendChild(lg)}
  document.querySelectorAll('#sw button').forEach((b,i)=>b.setAttribute('aria-current',i==cur));ring();paint();BS.afterRender&&BS.afterRender(cur,st);
  document.documentElement.style.setProperty('--w',st.clientWidth+'px')}
 $('#sw').innerHTML=NAMES.map((n,i)=>`<button data-i="${i}">${n}</button>`).join('');$('#sw').onclick=e=>{const b=e.target.closest('button');if(b)go(+b.dataset.i)};
