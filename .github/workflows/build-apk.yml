@@ -261,6 +261,13 @@ jobs:
           cat "$M"
           grep -q "android.permission.CAMERA" "$M" || { echo "CAMERA permission missing"; exit 1; }
 
+      - name: Turn off Android auto-backup
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's/android:allowBackup="true"/android:allowBackup="false"/' "$M"
+          grep -q 'android:allowBackup="false"' "$M" || sed -i 's/<application/<application android:allowBackup="false"/' "$M"
+          grep -n 'allowBackup' "$M"
+
       - name: Set app icon
         run: |
           cd android/app/src/main/res
