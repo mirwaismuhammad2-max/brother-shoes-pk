@@ -1029,7 +1029,7 @@ function bumpQ(a,s,d){const m=ensureQ(a);if(!Object.prototype.hasOwnProperty.cal
 function selectArt(id,size){const a=S.items.find(x=>x.id===id);if(!a)return;curId=id;price=+a.tag||0;sel.size=null;szPage=0;if(size){const i=sizeList(a).indexOf(String(size));if(i>=0){szPage=Math.floor(i/5);sel.size=String(size)}}go(0);toast(size&&sel.size?`${a.no} / size ${size}: ${qtyOf(a,size)} in stock`:'Selected '+a.no)}
 window.BS_select=selectArt;
 
-function sell(){if(!BS.can('sell'))return;const a=art();if(!a)return toast('Search and select an article first');const s=sel.size;if(!s)return toast('Select a size first');if(!(qtyOf(a,s)>0))return toast('Size '+s+' is out of stock');if(!(price>0))return toast('Set the final price first');
+function sell(){if(!BS.can('sell'))return;const a=art();if(!a)return toast('Search and select an article first');const s=sel.size;if(!s)return toast('Select a size first');if(!(qtyOf(a,s)>0))return toast('Size '+s+' is out of stock');if(!(price>0))return toast('Set the final price first');if(+a.min>0&&price<+a.min)return toast('Cannot sell '+a.no+' below its minimum price '+fmt(a.min)+'. Final price is '+fmt(price)+'.','err');
  const go2=n=>{ensureQ(a);bumpQ(a,s,-1);const rec={id:BS.id(),t:Date.now(),by:BS.uid(),a:a.no,aid:a.id,s,p:price,m:sel.pay,c:n||''};S.sales.push(rec);if(rec.m=='Credit')S.credits.push({id:rec.id,t:rec.t,kind:'udhaar',customer:rec.c,amt:rec.p,saleId:rec.id});BS.cloud.sale(rec,s);sv();BS.receipt({t:rec.t,no:'S-'+rec.id.slice(-6).toUpperCase(),title:'Sale receipt',lines:[['Article',a.no],['Size',''+s],['Payment',rec.m+(rec.c?' ('+rec.c+')':'')]],total:rec.p});toast(`Sold ${a.no} / size ${s} / ${fmt(rec.p)} (${sel.pay}${n?', '+n:''}). ${qtyOf(a,s)} left in size ${s}.`);render()};
  sel.pay=='Credit'?ask('Customer name',[{l:'Name'}],v=>v[0].trim()?go2(v[0].trim()):toast('Name required for credit')):go2()}
 function saveArt(){if(!BS.can('write'))return;if(!(val.no||'').trim())return toast('Enter the article number');
@@ -1419,7 +1419,7 @@ let CART=[],cartPay='Cash';
  const c=document.createElement('div');c.id='ctp';document.body.appendChild(c);
  $('#cadd').onclick=cartAdd;$('#cshow').onclick=cartOpen})();
 function cartFab(){const f=$('#cfab');if(!f)return;const ap=$('#app'),on=cur===0&&!!$('#st')&&!!ap&&!ap.hidden&&$('#auth').hidden;f.style.display=on?'flex':'none';$('#cshow').textContent='Cart ('+CART.reduce((t,l)=>t+l.q,0)+')'}
-function cartAdd(){const a=art();if(!a)return toast('Search and select an article first');const z=sel.size;if(!z)return toast('Select a size first');if(!(price>0))return toast('Set the final price first');
+function cartAdd(){const a=art();if(!a)return toast('Search and select an article first');const z=sel.size;if(!z)return toast('Select a size first');if(!(price>0))return toast('Set the final price first');if(+a.min>0&&price<+a.min)return toast('Cannot sell '+a.no+' below its minimum price '+fmt(a.min)+'. Final price is '+fmt(price)+'.','err');
  const have=CART.filter(l=>l.aid===a.id&&l.s===z).reduce((t,l)=>t+l.q,0);if(have+1>qtyOf(a,z))return toast('Only '+qtyOf(a,z)+' in stock for size '+z,'err');
  const l=CART.find(l=>l.aid===a.id&&l.s===z&&l.p===price);if(l)l.q++;else CART.push({aid:a.id,a:a.no,cat:a.cat||'',s:z,q:1,p:price});cartFab();toast('Added: '+a.no+' / size '+z+'. Cart has '+CART.reduce((t,l)=>t+l.q,0)+' pair(s).')}
 function cartSub(){return CART.reduce((t,l)=>t+l.p*l.q,0)}
@@ -1438,6 +1438,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
  if(k==='ok')cartFinal()});
 function cartFinal(){if(!BS.can('sell'))return;if(!CART.length)return toast('Cart is empty');const sub=cartSub(),fin=Math.round(+$('#cfi').value);if(!(fin>=0)||fin>sub)return toast('Final amount must be between 0 and '+sub,'err');
  for(const l of CART){const a=S.items.find(x=>x.id===l.aid),tot=CART.filter(y=>y.aid===l.aid&&y.s===l.s).reduce((t,y)=>t+y.q,0);if(!a||tot>qtyOf(a,l.s))return toast(l.a+' size '+l.s+': not enough stock','err')}
+ for(const l of CART){const a=S.items.find(x=>x.id===l.aid),each=sub>0?Math.floor(l.p*fin/sub):0;if(a&&+a.min>0&&each<+a.min)return toast('Cannot sell '+l.a+' below its minimum price '+fmt(a.min)+'. With this discount it would sell at '+fmt(each)+' each.','err')}
  const pay=$('#cpy').value,go2=n=>{const units=[];CART.forEach(l=>{for(let i=0;i<l.q;i++)units.push({l,v:Math.floor(l.p*fin/sub)})});let diff=fin-units.reduce((t,u)=>t+u.v,0);for(let i=0;diff>0;i=(i+1)%units.length,diff--)units[i].v++;
   const bill=BS.id(),t=Date.now(),lines=[];
   units.forEach(u=>{const a=S.items.find(x=>x.id===u.l.aid);ensureQ(a);bumpQ(a,u.l.s,-1);const rec={id:BS.id(),t,by:BS.uid(),a:a.no,aid:a.id,s:u.l.s,p:u.v,m:pay,c:n||'',bill};S.sales.push(rec);if(pay=='Credit')S.credits.push({id:rec.id,t,kind:'udhaar',customer:n,amt:rec.p,saleId:rec.id});BS.cloud.sale(rec,u.l.s)});
