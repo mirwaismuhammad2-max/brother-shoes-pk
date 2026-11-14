@@ -516,6 +516,7 @@ const imgToData=async(file,max,type,q)=>{
  if(d)return d;
  if(raw.length>1500000)throw new Error('This photo is too large to process.');
  return raw};
+window.imgToData=imgToData;
 const hhmm=t=>new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 const fdt=t=>new Date(t).toLocaleString([],{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 
