@@ -501,13 +501,21 @@ function authErr(e){const c=(e&&e.code)||'';
  if(/popup-closed|cancelled/.test(c))return'Sign-in was cancelled.';
  if(c==='permission-denied')return'Database rules block this. Publish firestore.rules (see README).';
  return(e&&e.message)?e.message.replace(/^Firebase:\s*/,''):'Something went wrong. Try again.'}
-const imgToData=(file,max,type,q)=>new Promise((res,rej)=>{
- const draw=(im,w,h)=>{try{const k=Math.min(1,max/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*k));c.height=Math.max(1,Math.round(h*k));c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL(type,q)}catch(e){return null}};
- const viaReader=()=>{const r=new FileReader();r.onerror=()=>rej(r.error||new Error('read'));
-  r.onload=()=>{let raw=String(r.result||'');if(!/^data:image\//.test(raw))raw='data:'+(file.type&&/^image\//.test(file.type)?file.type:'image/jpeg')+';base64,'+(raw.split(',')[1]||'');
-   const im=new Image();im.onload=()=>{res(draw(im,im.naturalWidth||im.width,im.naturalHeight||im.height)||raw)};im.onerror=()=>res(raw);im.src=raw};r.readAsDataURL(file)};
- const viaBitmap=()=>{if(!window.createImageBitmap)return viaReader();createImageBitmap(file).then(bm=>{const d=draw(bm,bm.width,bm.height);d?res(d):viaReader()},viaReader)};
- try{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const d=draw(im,im.naturalWidth||im.width,im.naturalHeight||im.height);URL.revokeObjectURL(u);d?res(d):viaBitmap()};im.onerror=()=>{URL.revokeObjectURL(u);viaBitmap()};im.src=u}catch(e){viaBitmap()}});
+const imgToData=async(file,max,type,q)=>{
+ const good=d=>typeof d==='string'&&d.length>300&&/^data:image\//.test(d);
+ const draw=(im,w,h)=>{try{if(!w||!h)return null;const k=Math.min(1,max/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*k));c.height=Math.max(1,Math.round(h*k));const x=c.getContext('2d');if(type==='image/jpeg'){x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height)}x.drawImage(im,0,0,c.width,c.height);const d=c.toDataURL(type,q);return good(d)?d:null}catch(e){return null}};
+ /* copy the bytes into memory first, so it no longer matters if the phone drops the original file */
+ let src=file;try{if(file.arrayBuffer){const b=await file.arrayBuffer();src=new Blob([b],{type:file.type||'image/jpeg'})}}catch(e){}
+ const viaUrl=()=>new Promise(r=>{let u;try{u=URL.createObjectURL(src)}catch(e){return r(null)}const im=new Image();im.onload=()=>{const d=draw(im,im.naturalWidth||im.width,im.naturalHeight||im.height);try{URL.revokeObjectURL(u)}catch(e){}r(d)};im.onerror=()=>{try{URL.revokeObjectURL(u)}catch(e){}r(null)};im.src=u});
+ const viaBmp=()=>window.createImageBitmap?createImageBitmap(src).then(bm=>{const d=draw(bm,bm.width,bm.height);try{bm.close()}catch(e){}return d},()=>null):Promise.resolve(null);
+ const viaRaw=()=>new Promise(r=>{const fr=new FileReader();fr.onerror=()=>r(null);fr.onload=()=>{let t=String(fr.result||'');if(!/^data:image\//.test(t))t='data:'+(src.type&&/^image\//.test(src.type)?src.type:'image/jpeg')+';base64,'+(t.split(',')[1]||'');r(good(t)?t:null)};try{fr.readAsDataURL(src)}catch(e){r(null)}});
+ let d=await viaUrl();if(d)return d;
+ d=await viaBmp();if(d)return d;
+ const raw=await viaRaw();if(!raw)throw new Error('The phone would not give the app this photo. Try Gallery, or take it again.');
+ d=await new Promise(r=>{const im=new Image();im.onload=()=>r(draw(im,im.naturalWidth||im.width,im.naturalHeight||im.height));im.onerror=()=>r(null);im.src=raw});
+ if(d)return d;
+ if(raw.length>1500000)throw new Error('This photo is too large to process.');
+ return raw};
 const hhmm=t=>new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 const fdt=t=>new Date(t).toLocaleString([],{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 
@@ -717,9 +725,9 @@ B.find=()=>{const q=String(val.q||'').trim().toLowerCase(),f=B.flt,rows=[],ids=[
   fm.innerHTML=`<h2>Search results</h2><p style="color:var(--mut);margin:0 0 .3rem">${q?'For "'+esc(q)+'"':'All articles'} · ${esc(f.cat)} / ${esc(f.type)}${n>1?' · page '+(pg+1)+'/'+n:''}</p><div>${rows.slice(pg*per,pg*per+per).join('')||'<p>No article found.</p>'}</div><div class="b"><button type="button" id="fpB" ${pg?'':'disabled'}>Back</button><button type="button" id="fpN" ${pg<n-1?'':'disabled'}>Next</button><button class="p" type="submit">Close</button></div>`;
   $('#fpB').onclick=()=>{pg--;draw()};$('#fpN').onclick=()=>{pg++;draw()};fitModal()};
  draw();$('#md').classList.add('on');fm.onclick=e=>{const r=e.target.closest('[data-sel]');if(!r)return;$('#md').classList.remove('on');window.BS_select(r.dataset.sel)};fm.onsubmit=e=>{e.preventDefault();$('#md').classList.remove('on')};if(!rows.length)snd.err();fitModal()};
-B.photoPicked=async e=>{const f=e.target.files[0];if(!f)return;setTimeout(()=>{try{e.target.value=''}catch(x){}},4000);if(!B.can('write'))return;
- try{pend.photoData=await imgToData(f,360,'image/jpeg',.7);pend.photo=1;toast('Photo selected: '+f.name)}catch(x){toast('Could not read the photo','err')}};
-B.logoPicked=async e=>{const f=e.target.files[0];if(!f)return;setTimeout(()=>{try{e.target.value=''}catch(x){}},4000);if(!B.can('owner'))return;
+B.photoPicked=async e=>{const f=e.target.files[0];if(!f)return;if(!B.can('write'))return;
+ try{pend.photoData=await imgToData(f,360,'image/jpeg',.7);pend.photo=1;toast('Photo selected: '+f.name)}catch(x){toast('Could not read the photo'+(x&&x.message?': '+x.message:''),'err')}};
+B.logoPicked=async e=>{const f=e.target.files[0];if(!f)return;if(!B.can('owner'))return;
  try{settings.logo=await imgToData(f,256,'image/png');saveSet();applyBrand();panelRefresh();
   if(cloud.on())cloud.commit(b=>b.set(doc('settings','main'),{logo:settings.logo},{merge:true}));toast('Logo changed and saved')}catch(x){toast('Could not read the logo','err')}};
 
@@ -997,8 +1005,8 @@ const esc2=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;
 let tt;function toast(m,k){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3400);try{BS.snd.auto(m,k)}catch(e){}}
 function ask(title,fs,ok){const f=$('#mf');
  f.innerHTML=`<h2>${title}</h2>`+fs.map((x,i)=>`<label for="q${i}">${x.l}</label>`+(x.o?`<select id="q${i}">${x.o.map(o=>`<option>${o}</option>`).join('')}</select>`:x.t=='area'?`<textarea id="q${i}" rows="3">${esc2(x.v||'')}</textarea>`:x.t=='photo'?`<input id="q${i}" type="hidden"><div class="phr"><button type="button" data-pc="${i}">Take photo</button><button type="button" data-pg="${i}">Gallery</button></div><img id="pv${i}" class="pvw" alt="" hidden><input id="pc${i}" type="file" accept="image/*" capture="environment" hidden><input id="pg${i}" type="file" accept="image/*" hidden>`:`<input id="q${i}" type="${x.t||'text'}" inputmode="${x.t=='number'?'decimal':'text'}" autocomplete="off" value="${esc2(x.v||'')}" placeholder="${esc2(x.ph||'')}"${x.dl?` list="dl${i}"`:''}>`+(x.dl?`<datalist id="dl${i}">${x.dl.map(n=>`<option value="${esc2(n)}"></option>`).join('')}</datalist>`:''))).join('')+`<div class="b"><button type="button" id="qc">Cancel</button><button class="p">OK</button></div>`;
- fs.forEach((x,i)=>{if(x.t!=='photo')return;const got=async e=>{const fl=e.target.files[0];if(!fl)return;setTimeout(()=>{try{e.target.value=''}catch(x){}},4000);try{const d=await imgToData(fl,1100,'image/jpeg',.6);$('#q'+i).value=d;const pv=$('#pv'+i);pv.src=d;pv.hidden=false}catch(er){toast('Could not read the photo','err')}};
-  $('#pc'+i).onchange=got;$('#pg'+i).onchange=got;f.querySelector('[data-pc="'+i+'"]').onclick=()=>$('#pc'+i).click();f.querySelector('[data-pg="'+i+'"]').onclick=()=>$('#pg'+i).click()});
+ fs.forEach((x,i)=>{if(x.t!=='photo')return;const got=async e=>{const fl=e.target.files[0];if(!fl)return;try{const d=await imgToData(fl,1100,'image/jpeg',.6);$('#q'+i).value=d;const pv=$('#pv'+i);pv.src=d;pv.hidden=false}catch(er){toast('Could not read the photo'+(er&&er.message?': '+er.message:''),'err')}};
+  $('#pc'+i).onchange=got;$('#pg'+i).onchange=got;f.querySelector('[data-pc="'+i+'"]').onclick=()=>{const t=$('#pc'+i);t.value='';t.click()};f.querySelector('[data-pg="'+i+'"]').onclick=()=>{const t=$('#pg'+i);t.value='';t.click()}});
  $('#md').classList.add('on');$('#q0').focus();$('#qc').onclick=()=>$('#md').classList.remove('on');
  f.onsubmit=e=>{e.preventDefault();const v=fs.map((x,i)=>$('#q'+i).value);$('#md').classList.remove('on');ok(v)}}
 
@@ -1445,7 +1453,7 @@ const SC=[
  {l:'Ladies',b:[333,1060,577,1142],g:'cat',v:'Ladies'},{l:'Boys',b:[598,1060,840,1142],g:'cat',v:'Boys'},{l:'Girls',b:[862,1060,1104,1142],g:'cat',v:'Girls'},
  {l:'Color',w:1,b:[335,1303,702,1374],in:'color',ph:'e.g., Black'},{l:'Buying price',w:1,bp:1,b:[735,1303,1103,1374],in:'buy',n:1,ph:'Rs 0'},{l:'Tag price',w:1,b:[335,1453,702,1524],in:'tag',n:1,ph:'Rs 0'},{l:'Minimum price',w:1,b:[735,1453,1103,1524],in:'min',n:1,ph:'Rs 0'},
  {l:'Sizes',w:1,b:[333,1695,785,1778],f:()=>ask('Sizes and quantity',[{l:'Example 36:2, 37:3, 38:1',t:'area'}],v=>{pend.sizes=v[0];toast('Sizes set: '+v[0]);paint()})},
- {l:'Upload photo',w:1,b:[865,1595,1132,1850],f:()=>$('#file').click()},{l:'Save',w:1,b:[503,1963,935,2083],f:saveArt}],
+ {l:'Upload photo',w:1,b:[865,1595,1132,1850],f:()=>{const t=$('#file');t.value='';t.click()}},{l:'Save',w:1,b:[503,1963,935,2083],f:saveArt}],
 [{l:'Add expense',w:1,b:[372,1920,1067,2025],f:()=>ask('Add expense',[{l:'What for'},{l:'Amount (Rs)',t:'number'}],v=>{const a=+v[1];if(!(a>0))return toast('Enter an amount');S.exp+=a;{const r={id:BS.id(),t:Date.now(),by:BS.uid(),what:v[0]||'',amt:a};S.expl.push(r);BS.cloud.expense(r)}sv();const T=todayStats();toast(`Expense added: ${v[0]||'-'} ${fmt(a)}. Expenses today ${fmt(T.exp)}, net profit ${fmt(T.net)}`);render()})},
  {l:'Net profit',p:1,b:[345,1225,1092,1398],f:()=>{const T=todayStats();toast(`Net profit ${fmt(T.net)} (profit ${fmt(T.profit)} minus expenses ${fmt(T.exp)})`)}}],
 [{l:'Bill details',b:[352,1480,1085,1773],f:openBills},
