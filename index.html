@@ -720,6 +720,7 @@ B.filters=()=>ask('Filters',[{l:'Category',o:['All','Ladies','Boys','Girls']},{l
 const sizesTxt=r=>r.sizes?('Sizes '+r.sizes):'';
 B.find=()=>{const q=String(val.q||'').trim().toLowerCase(),f=B.flt,rows=[],ids=[];
  S.items.filter(r=>(f.cat==='All'||r.cat===f.cat)&&(f.type==='All'||r.type===f.type)&&(!q||[r.no,r.brand,r.color,r.cat,r.type].join(' ').toLowerCase().includes(q))).forEach(r=>(ids.push(r.id),rows.push(`<div class="rw" data-sel="${esc(r.id)}" role="button" tabindex="0" style="cursor:pointer"><span><b>${esc(r.no)}</b> · ${esc(r.brand||'-')} · ${esc(r.color||'-')}<small>${esc(r.type)} · ${esc(r.cat)}${r.sizes?' · Sizes '+esc(r.sizes):''}</small></span><b>${fmt(r.tag||0)}</b></div>`)));
+ const ex=q?S.items.filter(r=>String(r.no||'').trim().toLowerCase()===q):[];if(ex.length===1){window.BS_select(ex[0].id);return}
  if(q&&ids.length===1){window.BS_select(ids[0]);return}
  const fm=$('#mf'),per=Math.max(2,Math.floor(innerHeight*.45/(remPx()*3.5)));let pg=0;
  const draw=()=>{const n=Math.max(1,Math.ceil(rows.length/per));pg=Math.min(pg,n-1);
@@ -1209,7 +1210,7 @@ const mnHide=()=>{const m=$('#mn');if(m)m.classList.remove('on');navPush()};
 function mqOpen(){navPush();let q=$('#mq');if(!q){q=document.createElement('div');q.id='mq';
   q.innerHTML='<form class="mc"><h2>Find / Sell</h2><label for="mqi">Search Article or Brand</label><input id="mqi" type="search" autocomplete="off" placeholder="Search Article or Brand"><button type="button" class="scn" data-q="scan">Scan barcode</button><div class="mb"><button type="button" data-q="x">Cancel</button><button type="submit" class="p">Search</button></div></form>';document.body.appendChild(q);
   q.addEventListener('click',e=>{if(e.target.dataset&&e.target.dataset.q==='scan'){scanBarcode(code=>{const c=String(code).trim(),f=findByCode(c);if(f){q.classList.remove('on');mnHide();selectArt(f.a.id,f.size)}else{$('#mqi').value=c;toast('No saved article has this barcode. Type the article number instead.','err')}});return}if(e.target===q||e.target.dataset.q==='x'){q.classList.remove('on');navPop()}});
-  q.querySelector('form').addEventListener('submit',e=>{e.preventDefault();const v=$('#mqi').value.trim();if(!v)return toast('Type an article or brand','err');q.classList.remove('on');mnHide();val.q=v;go(0)})}
+  q.querySelector('form').addEventListener('submit',e=>{e.preventDefault();const v=$('#mqi').value.trim();if(!v)return toast('Type an article or brand','err');q.classList.remove('on');mnHide();val.q=v;go(0);setTimeout(()=>{try{BS.find()}catch(x){}},30)})}
  $('#mqi').value='';q.classList.add('on');setTimeout(()=>$('#mqi').focus(),60)}
 function BS_menu(){let m=$('#mn');if(!m){m=document.createElement('div');m.id='mn';
   m.innerHTML='<button type="button" class="mx" data-m="x" aria-label="Close menu">\u2715</button><div class="mw"><img src="'+MENU_SRC+'" alt="Main menu: Find/Sell, Refund, Stock, Sales, Ledger, Setting, Labels" draggable="false">'+
